@@ -1,11 +1,11 @@
 ##### Intro
 Simple timewheel pkg implement by golang
 ###### Install
-go get github.com/funlake/timewheel
+go get github.com/funlake/gopkg/timer
 ###### Import
-import github.com/funlake/timewheel
+import github.com/funlake/gopkg/timer
 ```
-cron := &timewheel.Cron{}
+cron := &timer.Cron{}
 cron.Exec(3,func(){
     //do anything in each 3 seconds
 })
