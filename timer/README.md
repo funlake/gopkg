@@ -5,8 +5,8 @@ go get github.com/funlake/gopkg/timer
 ###### Import
 import github.com/funlake/gopkg/timer
 ```
-cron := &timer.Cron{}
-cron.Exec(3,func(){
+cron := timer.NewTimer()
+cron.SetInterval(3,func(){
     //do anything in each 3 seconds
 })
 ```
