@@ -1,22 +1,21 @@
-package timewheel
+package timer
 
 import (
 	"testing"
-	"encoding/json"
 )
 func BenchmarkCron_Exec(b *testing.B) {
-	cron := & Cron{}
+	cron := NewTimer()
 	cron.Ready()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
-			//cron.secondWheel.GetSlot(3)
-			cron.Exec(3, func() {
+			//timer.secondWheel.GetSlot(3)
+			cron.SetInterval(3, func() {
 
 			})
-			cron.Exec(63, func() {
+			cron.SetInterval(63, func() {
 
 			})
-			cron.Exec(3663, func() {
+			cron.SetInterval(3663, func() {
 
 			})
 		}
@@ -24,21 +23,21 @@ func BenchmarkCron_Exec(b *testing.B) {
 }
 
 func TestCron_Exec(t *testing.T) {
-	cron := & Cron{}
+	cron := NewTimer()
 	cron.Ready()
-	r := cron.Exec(61, func() {
+	r := cron.SetInterval(61, func() {
 
 	})
 	if r.pos != 1{
 		t.Error("Wrong slot position",r.pos)
 	}
-	if cron.MinuteWheel.slot[r.pos] == nil{
+	if cron.minuteWheel.slot[r.pos] == nil{
 		t.Error("Not put into minute slot correctly")
 	}
-	//if cron.secondWheel.slot[1] == nil{
+	//if timer.secondWheel.slot[1] == nil{
 	//	t.Error("Not put into second slot")
 	//}
-	r2 := cron.Exec(33, func() {
+	r2 := cron.SetInterval(33, func() {
 
 	})
 
@@ -46,7 +45,7 @@ func TestCron_Exec(t *testing.T) {
 		t.Error("Wrong slot position",r2.pos)
 	}
 
-	if cron.SecondWheel.slot[r2.pos] == nil{
+	if cron.secondWheel.slot[r2.pos] == nil{
 		t.Error("Not put into second slot correctly")
 	}
 }

@@ -1,11 +1,11 @@
-package timewheel
+package timer
 
 import (
 	"time"
 	"sync"
 )
 
-type TimeWheel struct{
+type timeWheel struct{
 	mu sync.Mutex
 	interval int
 	maxpos int
@@ -20,12 +20,12 @@ type SlotItem struct {
 	left int
 	pos int
 }
-func (tw *TimeWheel) GetSlotPos(timeout int) int{
+func (tw *timeWheel) GetSlotPos(timeout int) int{
 	findSlot := (timeout / tw.interval + tw.curpos ) % tw.maxpos
 	return findSlot
 }
 
-func (tw *TimeWheel) GetSlot(timeout int) (chan *SlotItem,int){
+func (tw *timeWheel) GetSlot(timeout int) (chan *SlotItem,int){
 	tw.mu.Lock()
 	defer tw.mu.Unlock()
 	findSlot := tw.GetSlotPos(timeout)
@@ -35,7 +35,7 @@ func (tw *TimeWheel) GetSlot(timeout int) (chan *SlotItem,int){
 	}
 	return tw.slot[findSlot],findSlot
 }
-func (tw *TimeWheel) SetInterval(timeout int,callback func()) *SlotItem{
+func (tw *timeWheel) SetInterval(timeout int,callback func()) *SlotItem{
 	//find next slot
 	slot,pos := tw.GetSlot(timeout)
 	si := &SlotItem{do : callback , timeout : timeout,dead : false,left:0,pos:pos}
@@ -51,11 +51,11 @@ func (tw *TimeWheel) SetInterval(timeout int,callback func()) *SlotItem{
 	return si
 }
 
-func (tw *TimeWheel) StopInterval(si *SlotItem){
+func (tw *timeWheel) StopInterval(si *SlotItem){
 	si.dead = true
 }
 //无锁情况下不能直接用tw.curpos,得传进来
-func (tw *TimeWheel) ReWheel( si *SlotItem,curpos int){
+func (tw *timeWheel) ReWheel( si *SlotItem,curpos int){
 
 	findSlot := (si.timeout / tw.interval + curpos ) % tw.maxpos
 	//slot := tw.GetSlot(si.timeout)
@@ -70,7 +70,7 @@ func (tw *TimeWheel) ReWheel( si *SlotItem,curpos int){
 		tw.slot[si.pos] <- si
 	}(si)
 }
-func (tw *TimeWheel) Invoke(){
+func (tw *timeWheel) Invoke(){
 	//invoke callback
 	//赋值很关键，处理过程与curpos更新分离开
 	curpos := tw.curpos
@@ -95,7 +95,7 @@ func (tw *TimeWheel) Invoke(){
 	}
 }
 
-func (tw *TimeWheel) UpdatePos(roundTrigger func()){
+func (tw *timeWheel) UpdatePos(roundTrigger func()){
 	if tw.curpos == tw.maxpos - 1 {
 		tw.curpos = 0
 		if roundTrigger != nil{
@@ -105,7 +105,7 @@ func (tw *TimeWheel) UpdatePos(roundTrigger func()){
 		tw.curpos = tw.curpos + 1
 	}
 }
-func (tw *TimeWheel) Start(roundTrigger func()) {
+func (tw *timeWheel) Start(roundTrigger func()) {
 	t := time.NewTicker(time.Second * time.Duration(tw.interval))
 	//if 0 slot got something
 	tw.Trigger(nil)
@@ -115,7 +115,7 @@ func (tw *TimeWheel) Start(roundTrigger func()) {
 	}
 }
 
-func(tw *TimeWheel) Trigger(roundTrigger func()){
+func(tw *timeWheel) Trigger(roundTrigger func()){
 	//先执行回调，再更新步数
 	tw.Invoke()
 	tw.UpdatePos(roundTrigger)
