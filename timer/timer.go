@@ -102,6 +102,17 @@ func (schedular *timer) SetInterval(timeout int,fun func()) *SlotItem{
 	}
 	return nil
 }
+func (schedular *timer) StopInterval(item * SlotItem)  {
+	if item.timeout <= schedular.minuteWheel.interval {
+		schedular.secondWheel.StopInterval(item)
+	}
+	if item.timeout > schedular.minuteWheel.interval && item.timeout <= schedular.hourWheel.interval {
+		schedular.minuteWheel.StopInterval(item)
+	}
+	if item.timeout > schedular.hourWheel.interval{
+		schedular.hourWheel.StopInterval(item)
+	}
+}
 func(schedular *timer)Ready(){
 	schedular.initialize()
 	go schedular.secondWheel.Start(func() {
