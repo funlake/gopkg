@@ -4,25 +4,6 @@ import (
 	"testing"
 	"encoding/json"
 )
-//type item struct {
-//	pos int
-//}
-//func BenchmarkList_PushFront(b *testing.B) {
-//	l := list.New()
-//	b.RunParallel(func(pb *testing.PB) {
-//		for pb.Next(){
-//			l.PushFront(&item{pos:0})
-//		}
-//	})
-//}
-//func BenchmarkList_PushBack(b *testing.B) {
-//	l := list.New()
-//	b.RunParallel(func(pb *testing.PB) {
-//		for pb.Next(){
-//			l.PushBack(&item{pos:0})
-//		}
-//	})
-//}
 func BenchmarkCron_Exec(b *testing.B) {
 	cron := & Cron{}
 	cron.Ready()
