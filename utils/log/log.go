@@ -1,9 +1,9 @@
-package utils
+package log
 import (
-"fmt"
-"time"
-"runtime"
-"path/filepath"
+	"fmt"
+	"time"
+	"runtime"
+	"path/filepath"
 )
 
 const (
