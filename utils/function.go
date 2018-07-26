@@ -10,7 +10,7 @@ func RoutineRecover(){
 		log.Error("%s",err)
 	}
 }
-func Wrap(fun func()){
+func WrapGo(fun func()){
 	go func() {
 		defer RoutineRecover()
 		fun()

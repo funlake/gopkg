@@ -2,13 +2,18 @@ package timer
 
 import "sync"
 
-var cron = NewTimer()
-var synconce = sync.Once{}
+var(
+	cron *timer
+	once = sync.Once{}
+ 	ticker *Ticker
+)
 func NewTicker() *Ticker {
-	synconce.Do(func() {
+	once.Do(func() {
+		cron = NewTimer()
 		cron.Ready()
+		ticker = &Ticker{slotItems:make(map[string] *SlotItem)}
 	})
-	return &Ticker{slotItems:make(map[string] *SlotItem)}
+	return ticker
 }
 type Ticker struct {
 	slotItems map[string] *SlotItem

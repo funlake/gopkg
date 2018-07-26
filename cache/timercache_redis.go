@@ -8,15 +8,15 @@ import (
 	"github.com/funlake/gopkg/utils/log"
 	"strings"
 )
-var ticker = timer.NewTicker()
 type TimerCacheRedis struct{
 	mu sync.Mutex
 	store *KvStoreRedis
 	local map[string] string
+	ticker *timer.Ticker
 }
 
 func NewTimerCacheRedis() *TimerCacheRedis{
-	return &TimerCacheRedis{local:make(map[string] string)}
+	return &TimerCacheRedis{local:make(map[string] string),ticker:timer.NewTicker()}
 }
 func (tc *TimerCacheRedis) Flush(){
 	tc.mu.Lock()
@@ -43,7 +43,7 @@ func (tc *TimerCacheRedis) Get(hk string,k string,wheel int) (string,error){
 		if err == nil /*|| strings.Contains(err.Error(),"nil returned")*/  {
 			//tc.local[localCacheKey] = v.(string)
 			tc.local[localCacheKey] = v.(string)
-			ticker.Set(wheel,localCacheKey, func() {
+			tc.ticker.Set(wheel,localCacheKey, func() {
 				tc.mu.Lock()
 				defer tc.mu.Unlock()
 				//log.Info("每%d秒定时检查%s",wheel,localCacheKey)
@@ -52,7 +52,7 @@ func (tc *TimerCacheRedis) Get(hk string,k string,wheel int) (string,error){
 				if err != nil {
 					if strings.Contains(err.Error(),"nil returned"){
 						log.Error("Empty value deteced(%d s) : %s,remove ticker run",wheel,localCacheKey)
-						ticker.Stop(wheel,localCacheKey)
+						tc.ticker.Stop(wheel,localCacheKey)
 					}else{
 						//发生redis连接故障，则继续保持旧有缓存
 						log.Error("Redis seems has gone,we do not clear cache if redis is down to keep gateway service's running")

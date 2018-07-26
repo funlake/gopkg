@@ -56,9 +56,10 @@ func (schedular *timer) SetInterval(timeout int,fun func()) *SlotItem{
 								//重置left,回到宇宙形成之初
 								sm.left = 0
 							} else {
-								//sm.left = (schedular.secondWheel.maxpos - schedular.secondWheel.curpos + 1) * schedular.secondWheel.interval
+								//得到调度后剩余步数，作为下次迭代累加基数
 								sm.left = schedular.minuteWheel.interval - ((timeout - sm.left) % schedular.minuteWheel.interval)
 							}
+							//执行完后删除秒定时器，等待下次分钟级别的调度
 							schedular.secondWheel.StopInterval(ss)
 						}
 						fun()
@@ -87,7 +88,6 @@ func (schedular *timer) SetInterval(timeout int,fun func()) *SlotItem{
 							//重置left,回到宇宙形成之初
 							sm.left = 0
 						} else {
-							//sh.left = (schedular.minuteWheel.maxpos - schedular.minuteWheel.curpos + 1) * schedular.minuteWheel.interval
 							sh.left = schedular.hourWheel.interval - ((timeout - sh.left) % schedular.hourWheel.interval)
 						}
 						schedular.minuteWheel.StopInterval(sm)
