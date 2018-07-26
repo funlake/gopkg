@@ -37,7 +37,7 @@ func (sr *KvStoreRedis) Connect(dsn string,pwd string){
 				}
 				// 选择db
 				c.Do("SELECT", 0)
-				log.Success("Redis connect successfully!")
+				log.Success("Set up redis connection")
 				return c, nil
 			},
 		}
