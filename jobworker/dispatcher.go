@@ -45,12 +45,12 @@ func (d *Dispatcher) Ready(){
 	for{
 		select{
 			case job := <-d.jobQueue:
-					select {
-						case jobChan := <-d.workerPool :
-							jobChan <- job
-						default:
-							job.OnWorkerFull()
-					}
+				select {
+					case jobChan := <-d.workerPool :
+						jobChan <- job
+					default:
+						job.OnWorkerFull()
+				}
 		}
 	}
 }

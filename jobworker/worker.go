@@ -29,15 +29,8 @@ func (w Worker) Ready(){
 			select {
 				//发现dispatcher传入了任务
 				case job := <-w.jobChannel:
-					w.HandleJob(job)
+					job.Do()
 			}
 		}
 	}()
-}
-
-func (w Worker) HandleJob(job WorkerJob){
-	//now := time.Now()
-	//res,err := GlobalTransport.RoundTrip(job.Q)
-	job.Do()
-	//log.Warning("%s -> 时间消耗 : %s",job.Id(),time.Since(now))
 }
