@@ -33,13 +33,13 @@ type httpProxyJob struct {
 	m string
 	t *http.Transport
 }
-func (job httpProxyJob) Id() string{
+func (job *httpProxyJob) Id() string{
 	return job.m
 }
-func (job httpProxyJob) OnWorkerFull(){
+func (job *httpProxyJob) OnWorkerFull(){
 	job.r <- HttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
 }
-func(job httpProxyJob) Do() {
+func(job *httpProxyJob) Do() {
 	now := time.Now()
 	res,err := job.t.RoundTrip(job.q)
 	//1.加协程可快速释放worker,worker不论转发是否成功就回列
@@ -55,10 +55,10 @@ func(job httpProxyJob) Do() {
 	log.Info("%s -> 请求时间消耗 : %s",job.Id(),time.Since(now))
 	//}()
 }
-func (job httpProxyJob) GetResponse() chan HttpProxyJobResponse {
+func (job *httpProxyJob) GetResponse() chan HttpProxyJobResponse {
 	r := job.r
 	return r
 }
-func (job httpProxyJob) ResetPool()  {
+func (job *httpProxyJob) ResetPool()  {
 	httpProxyJobPool.Put(job)
 }
