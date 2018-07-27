@@ -243,14 +243,10 @@ func (this *tokenBucket) stopTokenBucketTimer()  {
 //然后在回调处做消费channel的操作
 func (this *tokenBucket) GetToken()  bool{
 	select {
-	//case <- time.After(time.Millisecond * 1) :
-	default:
-		//log.Warning("bucket is empty")
-		return false
-	case <- this.bucket:
-		//log.Warning("Get token")
-		this.bucketIsFull = false
-		return true
+		case <- this.bucket:
+			this.bucketIsFull = false
+			return true
+		default:
 	}
 	return false
 }
