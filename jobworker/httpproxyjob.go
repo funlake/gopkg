@@ -5,28 +5,41 @@ import (
 	"net/http"
 	"errors"
 	"github.com/funlake/gopkg/utils/log"
+	"sync"
 )
-type HttpJobProxyJobResponse struct{
+type HttpProxyJobResponse struct{
 	Response *http.Response
 	Error error
 	Dur time.Duration
 }
-func NewHttpProxyJob(transport *http.Transport,q *http.Request,r chan HttpJobProxyJobResponse,id string) *HttpProxyJob{
-	return &HttpProxyJob{q:q,r:r,m:id,t:transport}
+var httpProxyJobPool = sync.Pool{
+	New: func() interface{}{
+		return &httpProxyJob{}
+	},
 }
-type HttpProxyJob struct {
+func NewHttpProxyJob(transport *http.Transport,q *http.Request,r chan HttpProxyJobResponse,id string) *httpProxyJob {
+	job := httpProxyJobPool.Get().(*httpProxyJob)
+	job.q = q
+	job.m = id
+	job.r = r
+	job.t = transport
+	return job
+	//return &httpProxyJob{q:q,r:r,m:id,t:transport}
+}
+
+type httpProxyJob struct {
 	q *http.Request
-	r chan HttpJobProxyJobResponse
+	r chan HttpProxyJobResponse
 	m string
 	t *http.Transport
 }
-func (job HttpProxyJob) Id() string{
+func (job httpProxyJob) Id() string{
 	return job.m
 }
-func (job HttpProxyJob) OnWorkerFull(){
-	job.r <- HttpJobProxyJobResponse{nil, errors.New("worker繁忙"),0}
+func (job httpProxyJob) OnWorkerFull(){
+	job.r <- HttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
 }
-func(job HttpProxyJob) Do() {
+func(job httpProxyJob) Do() {
 	now := time.Now()
 	res,err := job.t.RoundTrip(job.q)
 	//1.加协程可快速释放worker,worker不论转发是否成功就回列
@@ -38,10 +51,14 @@ func(job HttpProxyJob) Do() {
 	//目前选择:2,处理能力可通过调整worker size大小来决定
 	//TODO : 更多测试
 	//go func(res *http.Response,err error) {
-	job.r <- HttpJobProxyJobResponse{res, err, time.Since(now)}
+	job.r <- HttpProxyJobResponse{res, err, time.Since(now)}
 	log.Info("%s -> 请求时间消耗 : %s",job.Id(),time.Since(now))
 	//}()
 }
-func (job HttpProxyJob) GetResponse() chan HttpJobProxyJobResponse{
-	return job.r
+func (job httpProxyJob) GetResponse() chan HttpProxyJobResponse {
+	r := job.r
+	return r
+}
+func (job httpProxyJob) ResetPool()  {
+	httpProxyJobPool.Put(job)
 }

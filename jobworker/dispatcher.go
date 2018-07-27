@@ -12,7 +12,7 @@ func NewRequestDispather(maxWorker int,queueSize int) *Dispatcher {
 	dispatcher := &Dispatcher{}
 	//流水线长度
 	dispatcher.jobQueue = make(chan WorkerJob,queueSize)
-	//流水线旁工人数量
+	//流水线工人数量
 	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
 	dispatcher.Run(maxWorker)
 	return dispatcher
