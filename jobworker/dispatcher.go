@@ -1,14 +1,14 @@
 package jobworker
 
 import (
-	"github.com/funlake/gopkg/utils/log"
+	//"github.com/funlake/gopkg/utils/log"
 	"github.com/funlake/gopkg/utils"
 )
 type Dispatcher struct {
 	workerPool chan chan WorkerJob
 	jobQueue chan WorkerJob
 }
-func NewRequestDispather(maxWorker int,queueSize int) *Dispatcher {
+func NewDispather(maxWorker int,queueSize int) *Dispatcher {
 	dispatcher := &Dispatcher{}
 	//流水线长度
 	dispatcher.jobQueue = make(chan WorkerJob,queueSize)
@@ -23,7 +23,7 @@ func (d *Dispatcher) Put(job WorkerJob) bool{
 			return true
 		default :
 			//return false
-			log.Error("job队列已满")
+			//log.Error("job队列已满")
 	}
 	return false
 }
