@@ -2,6 +2,7 @@ package jobworker
 
 import (
 	//"github.com/funlake/gopkg/utils/log"
+	"github.com/funlake/gopkg/utils/log"
 )
 
 type simpleJob struct{
@@ -15,5 +16,5 @@ func (sj *simpleJob)Id() string{
 	return ""
 }
 func (sj *simpleJob)OnWorkerFull(){
-	//log.Warning("Worker is full:%d",fullSize)
+	log.Warning("Worker is full")
 }
