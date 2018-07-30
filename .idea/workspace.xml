@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b8815d11-797b-44da-9b2b-03518ae3b20a" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/jobworker/dispatcher.go" afterPath="$PROJECT_DIR$/jobworker/dispatcher.go" />
-      <change beforePath="$PROJECT_DIR$/jobworker/job.go" afterPath="$PROJECT_DIR$/jobworker/job.go" />
-      <change beforePath="$PROJECT_DIR$/jobworker/job_http.go" afterPath="$PROJECT_DIR$/jobworker/job_http.go" />
-      <change beforePath="$PROJECT_DIR$/jobworker/job_simple.go" afterPath="$PROJECT_DIR$/jobworker/job_simple.go" />
-    </list>
+    <list default="true" id="b8815d11-797b-44da-9b2b-03518ae3b20a" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,7 +15,7 @@
         <entry file="file://$PROJECT_DIR$/jobworker/dispatcher.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="120">
-              <caret line="39" column="35" lean-forward="true" selection-start-line="39" selection-start-column="35" selection-end-line="39" selection-end-column="35" />
+              <caret line="39" column="35" lean-forward="false" selection-start-line="39" selection-start-column="35" selection-end-line="39" selection-end-column="35" />
               <folding />
             </state>
           </provider>
@@ -41,7 +35,7 @@
         <entry file="file://$PROJECT_DIR$/timer/timewheel.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="136">
-              <caret line="7" column="22" lean-forward="true" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
+              <caret line="7" column="22" lean-forward="false" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
               <folding>
                 <element signature="e#15#41#0" expanded="true" />
               </folding>
@@ -53,7 +47,7 @@
         <entry file="file://$PROJECT_DIR$/timer/timer_test.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1802">
-              <caret line="55" column="30" lean-forward="true" selection-start-line="55" selection-start-column="30" selection-end-line="55" selection-end-column="30" />
+              <caret line="55" column="30" lean-forward="false" selection-start-line="55" selection-start-column="30" selection-end-line="55" selection-end-column="30" />
               <folding>
                 <element signature="e#15#36#0" expanded="true" />
               </folding>
@@ -65,7 +59,7 @@
         <entry file="file://$PROJECT_DIR$/jobworker/job_http.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1292">
-              <caret line="38" column="62" lean-forward="true" selection-start-line="38" selection-start-column="25" selection-end-line="38" selection-end-column="62" />
+              <caret line="38" column="62" lean-forward="false" selection-start-line="38" selection-start-column="25" selection-end-line="38" selection-end-column="62" />
               <folding>
                 <element signature="e#19#105#0" expanded="true" />
               </folding>
@@ -87,7 +81,7 @@
         <entry file="file://$PROJECT_DIR$/utils/log/log.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="34">
-              <caret line="9" column="32" lean-forward="true" selection-start-line="9" selection-start-column="32" selection-end-line="9" selection-end-column="32" />
+              <caret line="9" column="32" lean-forward="false" selection-start-line="9" selection-start-column="32" selection-end-line="9" selection-end-column="32" />
               <folding>
                 <element signature="e#12#65#0" expanded="true" />
               </folding>
@@ -428,7 +422,7 @@
     <entry file="file://$PROJECT_DIR$/timer/timewheel.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="136">
-          <caret line="7" column="22" lean-forward="true" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
+          <caret line="7" column="22" lean-forward="false" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
           <folding>
             <element signature="e#15#41#0" expanded="true" />
           </folding>
@@ -439,7 +433,7 @@
     <entry file="file://$PROJECT_DIR$/timer/timer_test.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1802">
-          <caret line="55" column="30" lean-forward="true" selection-start-line="55" selection-start-column="30" selection-end-line="55" selection-end-column="30" />
+          <caret line="55" column="30" lean-forward="false" selection-start-line="55" selection-start-column="30" selection-end-line="55" selection-end-column="30" />
           <folding>
             <element signature="e#15#36#0" expanded="true" />
           </folding>
@@ -450,7 +444,7 @@
     <entry file="file://$PROJECT_DIR$/utils/log/log.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
-          <caret line="9" column="32" lean-forward="true" selection-start-line="9" selection-start-column="32" selection-end-line="9" selection-end-column="32" />
+          <caret line="9" column="32" lean-forward="false" selection-start-line="9" selection-start-column="32" selection-end-line="9" selection-end-column="32" />
           <folding>
             <element signature="e#12#65#0" expanded="true" />
           </folding>
@@ -492,7 +486,7 @@
     <entry file="file://$PROJECT_DIR$/jobworker/dispatcher.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
-          <caret line="39" column="35" lean-forward="true" selection-start-line="39" selection-start-column="35" selection-end-line="39" selection-end-column="35" />
+          <caret line="39" column="35" lean-forward="false" selection-start-line="39" selection-start-column="35" selection-end-line="39" selection-end-column="35" />
           <folding />
         </state>
       </provider>
@@ -500,7 +494,7 @@
     <entry file="file://$PROJECT_DIR$/jobworker/job_http.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1292">
-          <caret line="38" column="62" lean-forward="true" selection-start-line="38" selection-start-column="25" selection-end-line="38" selection-end-column="62" />
+          <caret line="38" column="62" lean-forward="false" selection-start-line="38" selection-start-column="25" selection-end-line="38" selection-end-column="62" />
           <folding>
             <element signature="e#19#105#0" expanded="true" />
           </folding>
