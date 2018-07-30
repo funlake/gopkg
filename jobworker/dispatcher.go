@@ -22,7 +22,7 @@ func (d *Dispatcher) Put(job WorkerJob) bool{
 		case d.jobQueue <- job:
 			return true
 		default :
-			//return false
+			return false
 			//log.Error("job队列已满")
 	}
 	return false
