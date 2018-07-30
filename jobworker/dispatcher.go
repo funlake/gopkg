@@ -3,6 +3,7 @@ package jobworker
 import (
 	//"github.com/funlake/gopkg/utils/log"
 	"github.com/funlake/gopkg/utils"
+	"time"
 )
 type Dispatcher struct {
 	workerPool chan chan WorkerJob
@@ -15,6 +16,8 @@ func NewDispather(maxWorker int,queueSize int) *Dispatcher {
 	//流水线工人数量
 	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
 	dispatcher.Run(maxWorker)
+	//稍微等下worker启动
+	time.Sleep(time.Nanosecond * 10)
 	return dispatcher
 }
 func (d *Dispatcher) Put(job WorkerJob) bool{
