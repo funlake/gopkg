@@ -12,17 +12,29 @@ type HttpProxyJobResponse struct{
 	Error error
 	Dur time.Duration
 }
+var once = sync.Once{}
+var resChan chan chan HttpProxyJobResponse
 var httpProxyJobPool = sync.Pool{
 	New: func() interface{}{
 		return &httpProxyJob{}
 	},
 }
-func NewHttpProxyJob(transport *http.Transport,q *http.Request,r chan HttpProxyJobResponse,id string) *httpProxyJob {
+func initHttpProxyResChan(chanSize int){
+	once.Do(func() {
+		log.Success("Res channel size:%d",chanSize)
+		resChan = make(chan chan HttpProxyJobResponse,chanSize)
+		for i:=0;i<chanSize;i++{
+			resChan <- make(chan HttpProxyJobResponse)
+		}
+	})
+}
+func NewHttpProxyJob(transport *http.Transport,q *http.Request,rcsize int,id string) *httpProxyJob {
+	initHttpProxyResChan(rcsize)
 	job := httpProxyJobPool.Get().(*httpProxyJob)
 	job.q = q
 	job.m = id
-	job.r = r
 	job.t = transport
+	job.setResChan()
 	return job
 	//return &httpProxyJob{q:q,r:r,m:id,t:transport}
 }
@@ -55,10 +67,18 @@ func(job *httpProxyJob) Do() {
 	log.Info("%s -> 请求时间消耗 : %s",job.Id(),time.Since(now))
 	//}()
 }
-func (job *httpProxyJob) GetResponse() chan HttpProxyJobResponse {
-	r := job.r
-	return r
+func (job *httpProxyJob) GetResChan() chan HttpProxyJobResponse {
+	return job.r
 }
-func (job *httpProxyJob) ResetPool()  {
+func (job *httpProxyJob) Release()  {
+	job.putResChan()
 	httpProxyJobPool.Put(job)
+}
+
+func (job *httpProxyJob) setResChan(){
+ 	job.r = <- resChan
+}
+
+func (job *httpProxyJob) putResChan(){
+	resChan <- job.r
 }

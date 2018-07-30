@@ -4,7 +4,7 @@ import (
 	"testing"
 	"net/http"
 	"time"
-	"fmt"
+	"github.com/funlake/gopkg/utils/log"
 )
 
 func TestDispatcher_Put(t *testing.T) {
@@ -30,47 +30,58 @@ func BenchmarkDispatcher_Put(b *testing.B) {
 		}
 	})
 }
-
-func TestNewHttpProxyJob(t *testing.T) {
-	dispatcher := NewDispather(200,500)
-	//等待worker启动
-	time.Sleep(time.Nanosecond * 1)
+func makeBaiduRequest(dispatcher *Dispatcher) error{
 	transport := &http.Transport{
 		DisableKeepAlives : false,
 		MaxIdleConnsPerHost : 10,
 	}
 	req,_ := http.NewRequest("GET","http://www.baidu.com",nil)
-	rc := make(chan HttpProxyJobResponse)
-	job := NewHttpProxyJob(transport,req,rc,"get_baidu")
+	job := NewHttpProxyJob(transport,req,200,"get_baidu")
 
 	if dispatcher.Put(job){
 		//accessing baidu
 		select{
-			//3超时控制
-			case <- time.After(time.Second * 3):
-				r := <- rc
-				if  r.Error == nil {
-					r.Response.Body.Close()
-				}
-				t.Log("3秒超时触发")
-				job.ResetPool()
-			case r := <- rc:
-				if  r.Error != nil {
-					t.Error(r.Error.Error())
-				}else {
-					resp := r.Response
-					defer resp.Body.Close()
-					//body, err := ioutil.ReadAll(resp.Body)
-					//buf := new(bytes.Buffer)
-					//buf.ReadFrom(resp.Body)
-					//t.Log(buf.String())
-					t.Log(fmt.Sprintf("请求百度返回 http status : %d",resp.StatusCode))
+		//3超时控制
+		case <- time.After(time.Second * 3):
+			r := <- job.GetResChan()
+			if  r.Error == nil {
+				r.Response.Body.Close()
+			}
 
-				}
-				job.ResetPool()
+			job.Release()
+		case r := <- job.GetResChan():
+			if  r.Error != nil {
+				return r.Error
+			}else {
+				resp := r.Response
+				defer resp.Body.Close()
+				//body, err := ioutil.ReadAll(resp.Body)
+				//buf := new(bytes.Buffer)
+				//buf.ReadFrom(resp.Body)
+				//t.Log(buf.String())
+				//t.Log(fmt.Sprintf("请求百度返回 http status : %d",resp.StatusCode))
+				log.Success("请求百度返回 http status : %d",resp.StatusCode)
+			}
+			job.Release()
 		}
 	}else{
 		//queue is full
 	}
+	return nil
+}
+func TestNewHttpProxyJob(t *testing.T) {
+	dispatcher := NewDispather(200,500)
+	//等待worker启动
+	time.Sleep(time.Nanosecond * 1)
+	makeBaiduRequest(dispatcher)
+}
 
+func BenchmarkDispatcher_Baidu(b *testing.B) {
+	dispatcher := NewDispather(200,500)
+	b.SetParallelism(10)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next(){
+			makeBaiduRequest(dispatcher)
+		}
+	})
 }

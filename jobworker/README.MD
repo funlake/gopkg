@@ -17,4 +17,5 @@ type WorkerJob interface{
   }
 */
 dispatcher.Put(simpleJob{})
+//http请求构建可查看dispatche_test.go文件
 ```

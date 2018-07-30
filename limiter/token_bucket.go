@@ -28,13 +28,7 @@ type tokenBucketSchedular struct{
 }
 
 func (tbs *tokenBucketSchedular)GetTimeTokenBucket(bucketKey string,rate int,qps int,second  time.Duration,dayRateFun *DayRateFun)  *tokenBucket{
-	tbs.RLock()
-	if _,ok := tbs.tbHash[bucketKey];!ok{
-		tbs.RUnlock()
-		tbs.makeTimeBucket(bucketKey,rate,qps,second,dayRateFun)
-	}else{
-		tbs.RUnlock()
-	}
+	tbs.makeTimeBucket(bucketKey,rate,qps,second,dayRateFun)
 	return tbs.tbHash[bucketKey]
 }
 func (tbs *tokenBucketSchedular) makeTimeBucket(bucketKey string,rate int,size int,second  time.Duration,dayRateFun *DayRateFun){
