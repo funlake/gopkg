@@ -27,11 +27,11 @@ type tokenBucketSchedular struct{
 	tbCache map[string] interface{}
 }
 
-func (tbs *tokenBucketSchedular)GetTimeTokenBucket(bucketKey string,rate int,size int,second  time.Duration,dayRateFun *DayRateFun)  *tokenBucket{
+func (tbs *tokenBucketSchedular)GetTimeTokenBucket(bucketKey string,rate int,qps int,second  time.Duration,dayRateFun *DayRateFun)  *tokenBucket{
 	tbs.RLock()
 	if _,ok := tbs.tbHash[bucketKey];!ok{
 		tbs.RUnlock()
-		tbs.makeTimeBucket(bucketKey,rate,size,second,dayRateFun)
+		tbs.makeTimeBucket(bucketKey,rate,qps,second,dayRateFun)
 	}else{
 		tbs.RUnlock()
 	}
