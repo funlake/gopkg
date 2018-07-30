@@ -135,7 +135,6 @@ func (this *tokenBucket) setDayRateFun(fs *DayRateFun){
 //每隔一段时间执行令牌放入令牌桶动作
 func (this *tokenBucket) startTimer()  {
 	//往全局定时器插入当前事件
-	log.Warning("%d秒令牌桶启动" ,int(this.second))
 	this.ticker.Set(int(this.second),this.bucketKey, func(){
 			this.putTokenIntoBucket(TB_PUTRATE)
 	})
