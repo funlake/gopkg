@@ -49,7 +49,7 @@ func (d *Dispatcher) Ready(){
 					case jobChan := <-d.workerPool :
 						jobChan <- job
 					default:
-						job.OnWorkerFull()
+						job.OnWorkerFull(d)
 				}
 		}
 	}
