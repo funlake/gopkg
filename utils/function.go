@@ -5,14 +5,14 @@ import (
 	"unsafe"
 )
 
-func RoutineRecover(){
+func RoutineRecover(msg string){
 	if err := recover() ; err != nil{
-		log.Error("%s",err)
+		log.Error("%s : %s ",msg,err)
 	}
 }
-func WrapGo(fun func()){
+func WrapGo(fun func(),msg string){
 	go func() {
-		defer RoutineRecover()
+		defer RoutineRecover(msg)
 		fun()
 	}()
 }

@@ -62,7 +62,7 @@ func (tbs *tokenBucketSchedular) makeTimeBucket(bucketKey string,rate int,size i
 	//获取信号,缓存每日限流数据
 	utils.WrapGo(func() {
 		tbs.tbHash[bucketKey].catchExit()
-	})
+	},"token bucket cache exit")
 }
 func (tbs *tokenBucketSchedular) restartTimeBucket(bucketKey string,rate int,size int,duration  time.Duration,dayRateFun *DayRateFun){
 	tbs.RLock()

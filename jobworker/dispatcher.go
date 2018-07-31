@@ -37,7 +37,7 @@ func (d *Dispatcher) Run(maxWorker int){
 	}
 	utils.WrapGo(func() {
 		d.Ready()
-	})
+	},"dispather run")
 }
 
 //需做worker繁忙超时处理机制,否则会因为worker过于繁忙，

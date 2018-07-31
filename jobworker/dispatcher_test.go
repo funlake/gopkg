@@ -9,8 +9,6 @@ import (
 
 func TestDispatcher_Put(t *testing.T) {
 	dispatcher := NewDispather(2,10)
-	//等待worker启动
-	time.Sleep(time.Nanosecond * 1)
 	for i:=0;i<10;i++{
 		dispatcher.Put(&simpleJob{})
 	}
@@ -41,7 +39,7 @@ func makeBaiduRequest(dispatcher *Dispatcher) error{
 	if dispatcher.Put(job){
 		//accessing baidu
 		select{
-		//3超时控制
+		//3s超时控制
 		case <- time.After(time.Second * 3):
 			r := <- job.GetResChan()
 			if  r.Error == nil {
@@ -71,8 +69,6 @@ func makeBaiduRequest(dispatcher *Dispatcher) error{
 }
 func TestNewHttpProxyJob(t *testing.T) {
 	dispatcher := NewDispather(200,500)
-	//等待worker启动
-	time.Sleep(time.Nanosecond * 1)
 	makeBaiduRequest(dispatcher)
 }
 
