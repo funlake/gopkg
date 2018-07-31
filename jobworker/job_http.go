@@ -12,8 +12,8 @@ type HttpProxyJobResponse struct{
 	Error error
 	Dur time.Duration
 }
-var once = sync.Once{}
-var resChan chan chan HttpProxyJobResponse
+var once = &sync.Once{}
+var httpResChan chan chan HttpProxyJobResponse
 var httpProxyJobPool = sync.Pool{
 	New: func() interface{}{
 		return &httpProxyJob{}
@@ -22,21 +22,23 @@ var httpProxyJobPool = sync.Pool{
 func initHttpProxyResChan(chanSize int){
 	once.Do(func() {
 		log.Success("Res channel size:%d",chanSize)
-		resChan = make(chan chan HttpProxyJobResponse,chanSize)
+		httpResChan = make(chan chan HttpProxyJobResponse,chanSize)
 		for i:=0;i<chanSize;i++{
-			resChan <- make(chan HttpProxyJobResponse)
+			httpResChan <- make(chan HttpProxyJobResponse)
 		}
 	})
 }
 func NewHttpProxyJob(transport *http.Transport,q *http.Request,rcsize int,id string) *httpProxyJob {
-	initHttpProxyResChan(rcsize)
-	job := httpProxyJobPool.Get().(*httpProxyJob)
-	job.q = q
-	job.m = id
-	job.t = transport
+	if httpResChan == nil{
+		initHttpProxyResChan(rcsize)
+	}
+	//job := httpProxyJobPool.Get().(*httpProxyJob)
+	//job.q = q
+	//job.m = id
+	//job.t = transport
+	job := &httpProxyJob{q:q,m:id,t:transport}
 	job.setResChan()
 	return job
-	//return &httpProxyJob{q:q,r:r,m:id,t:transport}
 }
 
 type httpProxyJob struct {
@@ -52,7 +54,7 @@ func (job *httpProxyJob) OnWorkerFull(dispatcher *Dispatcher){
 	job.r <- HttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
 }
 func(job *httpProxyJob) Do() {
-	now := time.Now()
+	//now := time.Now()
 	res,err := job.t.RoundTrip(job.q)
 	//1.加协程可快速释放worker,worker不论转发是否成功就回列
 	// 优点:处理速度快,保证worker快速回,保证可用worker数
@@ -63,8 +65,8 @@ func(job *httpProxyJob) Do() {
 	//目前选择:2,处理能力可通过调整worker size大小来决定
 	//TODO : 更多测试
 	//go func(res *http.Response,err error) {
-	job.r <- HttpProxyJobResponse{res, err, time.Since(now)}
-	log.Info("%s -> 请求时间消耗 : %s",job.Id(),time.Since(now))
+	job.r <- HttpProxyJobResponse{res, err, 0}
+	//log.Info("%s -> transport请求时间消耗 : %s",job.Id(),time.Since(now))
 	//}()
 }
 func (job *httpProxyJob) GetResChan() chan HttpProxyJobResponse {
@@ -72,13 +74,13 @@ func (job *httpProxyJob) GetResChan() chan HttpProxyJobResponse {
 }
 func (job *httpProxyJob) Release()  {
 	job.putResChan()
-	httpProxyJobPool.Put(job)
+	//httpProxyJobPool.Put(job)
 }
 
 func (job *httpProxyJob) setResChan(){
- 	job.r = <- resChan
+ 	job.r = <-httpResChan
 }
 
 func (job *httpProxyJob) putResChan(){
-	resChan <- job.r
+	httpResChan <- job.r
 }
