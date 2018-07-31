@@ -6,9 +6,11 @@ go get github.com/funlake/gopkg/timer
 import github.com/funlake/gopkg/timer
 ```
 cron := timer.NewTimer()
-cron.SetInterval(3,func(){
+st := cron.SetInterval(3,func(){
     //do anything in each 3 seconds
 })
+//stop interval
+cron.StopInterval(st)
 ```
 
 

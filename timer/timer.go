@@ -102,7 +102,7 @@ func (timer *timer) SetInterval(timeout int,fun func()) *SlotItem{
 	}
 	return nil
 }
-func (timer *timer) StopInterval(item * SlotItem)  {
+func (timer *timer) StopInterval(item *SlotItem)  {
 	if item.timeout <= timer.minuteWheel.interval {
 		timer.secondWheel.StopInterval(item)
 	}
