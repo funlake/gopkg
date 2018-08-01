@@ -132,7 +132,7 @@ func (this *tokenBucket) startTimer()  {
 	this.ticker.Set(int(this.second),this.bucketKey, func(){
 			this.putTokenIntoBucket(TB_PUTRATE)
 	})
-	log.Success("限流令牌tick[%d][%s],%d,%d桶定时器启动:",int(this.second),this.bucketKey,this.rate,this.size)
+	log.Success("限流令牌桶%s,%dreq/%ds,rate:%d桶定时器启动:",this.bucketKey,this.size,int(this.second),this.rate)
 }
 //重启定时动作
 func (this *tokenBucket) restartTimer() {

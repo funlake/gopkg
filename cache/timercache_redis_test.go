@@ -16,6 +16,7 @@ func BenchmarkTimerCacheRedis_Get(b *testing.B) {
 	initTest()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
+			//hashget,如果是普通get，将第一个参数置空即可
 			_,err := timercache.Get("gateway:proxy","access_token",3)
 			if err != nil{
 				b.Error(err.Error())
