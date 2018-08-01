@@ -84,19 +84,6 @@ func (tbs *tokenBucketSchedular) setRateSize(bucketKey string,rate int,size int)
 	tbs.Unlock()
 }
 
-//func (tbs *tokenBucketSchedular) SetDayLimitHandler(bucketKey string,getDayRateFun func(key string) (string,error),setDayRateFun func(k string,v string)){
-//	tbs.Lock()
-//	defer tbs.Unlock()
-//	if _,ok := tbs.tbHash[bucketKey];ok{
-//		log.Success("Set day rate fun")
-//		tbs.tbHash[bucketKey].setDayRateFun(&DayRateFun{
-//			Get: getDayRateFun,
-//			Set: setDayRateFun,
-//		})
-//	}
-//}
-//var tickerSecond = map[time.Duration] *time.Ticker{}
-
 type DayRateFun struct{
 	Set func(key string,val string)
 	Get func(key string) (string,error)
@@ -115,7 +102,7 @@ type tokenBucket struct {
 	bucketIsFull bool
 	//loop second
 	second time.Duration
-	////定时器,定时往桶里放令牌
+	//定时器,定时往桶里放令牌
 	ticker *timer.Ticker
 	//每日定时器,只对每日限流起作用
 	dayTicker bool
@@ -247,16 +234,9 @@ func (this *tokenBucket) GetToken()  bool{
 func (this *tokenBucket) catchExit()  {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt,syscall.SIGKILL,syscall.SIGHUP,syscall.SIGQUIT,syscall.SIGINT)
-	//defer utils.RoutineRecover()
-	// Block until a signal is received.
-	//cache := lib.NewCache()
-	//go func(){
-		//defer utils.RoutineRecover()
 	select {
 		case <-c :
 			log.Warning(this.bucketKey +" caught stop signal")
-			//fmt.Println(this.bucketKey+" has Set left cache")
-			//cache.SetRateLimitLeft(this.bucketKey,strconv.Itoa(len(this.bucket)))
 			if this.dayFun != nil {
 				this.dayFun.Set(this.bucketKey, strconv.Itoa(len(this.bucket)))
 			}

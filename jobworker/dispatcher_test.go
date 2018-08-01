@@ -6,7 +6,6 @@ import (
 	"time"
 	"github.com/valyala/fasthttp"
 	"github.com/funlake/gopkg/utils/log"
-	"bytes"
 )
 var transport = &http.Transport{
 	DisableKeepAlives : false,
@@ -54,12 +53,11 @@ func makeRequest(dispatcher *Dispatcher) error{
 			}else {
 				resp := r.Response
 				defer resp.Body.Close()
-				//body, err := ioutil.ReadAll(resp.Body)
-				buf := new(bytes.Buffer)
-				buf.ReadFrom(resp.Body)
+				//返回结果
+				//buf := new(bytes.Buffer)
+				//buf.ReadFrom(resp.Body)
 				//t.Log(buf.String())
-				//t.Log(fmt.Sprintf("请求百度返回 http status : %d",resp.StatusCode))
-				log.Success("trasport 请求返回 http status : %d,body: %s,请求时间 : %s",resp.StatusCode,buf.String(),time.Since(now))
+				log.Success("trasport 请求返回 http status : %d,请求时间 : %s",resp.StatusCode,time.Since(now))
 			}
 			job.Release()
 		}
@@ -70,14 +68,6 @@ func makeRequest(dispatcher *Dispatcher) error{
 }
 func makeRequestWithFastHttp(dispatcher *Dispatcher) error{
 	url := "http://www.baidu.com"
-	//qs := "access_token?app_id=1&app_secret=2&grant_type=client_credential"
-	////copy body & param
-	//if strings.Contains(qs,"?") {
-	//	qss := strings.Split(qs, "?")
-	//	if len(qss) > 1 {
-	//		url = url + "?" + qss[1]
-	//	}
-	//}
 	now := time.Now()
 	req := fasthttp.AcquireRequest()
 	req.SetRequestURI(url)
@@ -99,13 +89,7 @@ func makeRequestWithFastHttp(dispatcher *Dispatcher) error{
 				return r.Error
 			}else {
 				//r.Response.Body()
-				//[]byte(r.Response.Header.String())
-				//body, err := ioutil.ReadAll(resp.Body)
-				//buf := new(bytes.Buffer)
-				//buf.ReadFrom(resp.Body)
-				//t.Log(buf.String())
-				//t.Log(fmt.Sprintf("请求百度返回 http status : %d",resp.StatusCode))
-				log.Success("fasthttp 请求返回 http status : %d,body : %s,请求时间 : %s",r.Response.StatusCode(),r.Response.Body(),time.Since(now))
+				log.Success("fasthttp 请求返回 http status : %d,请求时间 : %s",r.Response.StatusCode(),time.Since(now))
 			}
 			job.Release()
 		}
@@ -124,40 +108,11 @@ func TestNewHttpProxyJob(t *testing.T) {
 	makeRequest(dispatcher)
 }
 
-func BenchmarkDispatcher_WithTransport(b *testing.B) {
-	b.StopTimer()
-	dispatcher := NewDispather(200,500)
-	b.StartTimer()
-	for i:=0;i<15;i++{
-		makeRequest(dispatcher)
-	}
-	//b.SetParallelism(10)
-	//b.RunParallel(func(pb *testing.PB) {
-	//	for pb.Next(){
-	//		makeRequest(dispatcher)
-	//	}
-	//})
-}
-
-//func BenchmarkDispatcher_WithFasthttp(b *testing.B) {
-//	b.StopTimer()
-//	dispatcher := NewDispather(200,500)
-//	b.StartTimer()
-//	for i:=0;i<15;i++{
-//		makeRequestWithFastHttp(dispatcher)
-//	}
-//}
-
-//func BenchmarkNewHttpProxyJob(b *testing.B) {
+//func BenchmarkDispatcher_WithTransport(b *testing.B) {
 //	//b.SetParallelism(10)
 //	//b.RunParallel(func(pb *testing.PB) {
 //	//	for pb.Next(){
-//	//		req,_ := http.NewRequest("GET","http://www.baidu.com",nil)
-//	//		NewHttpProxyJob(transport,req,200,"get_baidu")
+//	//		makeRequest(dispatcher)
 //	//	}
 //	//})
-//	for i:=0;i<20;i++{
-//		req,_ := http.NewRequest("GET","http://www.baidu.com",nil)
-//		NewHttpProxyJob(transport,req,200,"get_baidu")
-//	}
 //}

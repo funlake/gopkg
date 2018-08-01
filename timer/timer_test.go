@@ -34,9 +34,6 @@ func TestCron_Exec(t *testing.T) {
 	if cron.minuteWheel.slot[r.pos] == nil{
 		t.Error("Not put into minute slot correctly")
 	}
-	//if timer.secondWheel.slot[1] == nil{
-	//	t.Error("Not put into second slot")
-	//}
 	r2 := cron.SetInterval(33, func() {
 
 	})
@@ -49,15 +46,3 @@ func TestCron_Exec(t *testing.T) {
 		t.Error("Not put into second slot correctly")
 	}
 }
-
-//func TestCron_Ready(t *testing.T) {
-//	m := `{"code":-2,"data":[],"msg":"参数缺失"}`
-//	type r struct{
-//		Code int `json:"code"`
-//		Data interface{} `json:"data"`
-//		Msg string `json:"msg"`
-//	}
-//	var R r
-//	json.Unmarshal([]byte(m),&R)
-//	t.Log(R)
-//}
