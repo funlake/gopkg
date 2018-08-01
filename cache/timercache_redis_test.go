@@ -3,17 +3,25 @@ package cache
 import (
 	"testing"
 	"os"
+	"sync"
 )
 var timercache *TimerCacheRedis
+var cacheSyncOnce = &sync.Once{}
 func initTest(){
-	timercache = NewTimerCacheRedis()
-	redisStore := NewKvStoreRedis()
-	redisStore.Connect(os.Getenv("REDIS_ETC1_HOST")+":"+os.Getenv("REDIS_ETC1_PORT"),os.Getenv("REDIS_ETC1_PASSWORD"))
-	//log.Error("%s",redisStore.pool.Get().Do("get","abc"))
-	timercache.SetStore(redisStore)
+	cacheSyncOnce.Do(func() {
+		timercache = NewTimerCacheRedis()
+		redisStore := NewKvStoreRedis()
+		redisStore.Connect(os.Getenv("REDIS_ETC1_HOST")+":"+os.Getenv("REDIS_ETC1_PORT"),os.Getenv("REDIS_ETC1_PASSWORD"))
+		//log.Error("%s",redisStore.pool.Get().Do("get","abc"))
+		timercache.SetStore(redisStore)
+	})
+
 }
 func BenchmarkTimerCacheRedis_Get(b *testing.B) {
+	b.StopTimer()
 	initTest()
+	b.StartTimer()
+	b.SetParallelism(20)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
 			//hashget,如果是普通get，将第一个参数置空即可
