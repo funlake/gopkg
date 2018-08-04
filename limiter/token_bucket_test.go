@@ -14,7 +14,7 @@ func Benchmark_GetTimeTokenBucket100(b *testing.B) {
 	b.SetParallelism(20)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
-			tokenBucketSchedular.GetTimeTokenBucket("test_second", 100, 100, 3,nil)//.GetToken()
+			tokenBucketSchedular.GetTimeTokenBucket("test_second", 100, 100, 3,nil).GetToken()
 		}
 	})
 }

@@ -17,76 +17,72 @@ const  (
 	TB_PUTRATE = 2 //  秒，分，时限流标识
 )
 func NewTokenBucketSchedular() *tokenBucketSchedular{
-	return &tokenBucketSchedular{
-		tbHash: make(map[string] *tokenBucket),
-		tbCache: make(map[string] interface{}),
-	}
+	return &tokenBucketSchedular{}
 }
 type tokenBucketSchedular struct{
-	sync.Mutex
-	tbHash map[string] *tokenBucket
-	tbCache map[string] interface{}
+	tbKv    sync.Map
+	tcKv	sync.Map
 }
 
 func (tbs *tokenBucketSchedular)GetTimeTokenBucket(bucketKey string,rate int,qps int,second  time.Duration,dayRateFun *DayRateFun)  *tokenBucket{
 	return tbs.makeTimeBucket(bucketKey,rate,qps,second,dayRateFun)
 }
 func (tbs *tokenBucketSchedular) makeTimeBucket(bucketKey string,rate int,size int,second  time.Duration,dayRateFun *DayRateFun) *tokenBucket{
-
-	//defer tbs.Lock()
-	tbs.Lock()
-	if _,ok := tbs.tbHash[bucketKey];ok{
-		if tbs.tbCache[bucketKey+"_rate"] != rate || tbs.tbCache[bucketKey+"_size"] != size{
-			tbs.Unlock()
+	if tbc,ok := tbs.tbKv.Load(bucketKey);ok{
+		crate,ok2 := tbs.tcKv.Load(bucketKey+"_rate")
+		csize,ok3 := tbs.tcKv.Load(bucketKey+"_size")
+		if ok2 && ok3 && (crate.(int) != rate || csize != size){
 			tbs.setRateSize(bucketKey,rate,size)
 		    tbs.restartTimeBucket(bucketKey,rate,size,second,dayRateFun)
-		}else{
-			tbs.Unlock()
 		}
-		//tbs.Unlock()
-		return tbs.tbHash[bucketKey]
+		return tbc.(*tokenBucket)
 	}
 	//tbs.Lock()
-	tbs.tbHash[bucketKey] = &tokenBucket{bucket:make(chan int ,size ), rate:rate,size:size, bucketKey:bucketKey, bucketIsFull:false, second:second, ticker:tbTicker,dayTicker:true}
-	tbs.Unlock()
+
+	//tbs.tbHash[bucketKey] = &tokenBucket{bucket:make(chan int ,size ), rate:rate,size:size, bucketKey:bucketKey, bucketIsFull:false, second:second, ticker:tbTicker,dayTicker:true}
+
+	tb := &tokenBucket{bucket:make(chan int ,size ), rate:rate,size:size, bucketKey:bucketKey, bucketIsFull:false, second:second, ticker:tbTicker,dayTicker:true}
+	tbs.tbKv.Store(bucketKey,tb)
 	bucketType := bucketKey[len(bucketKey) - 4 :]
 	rateType   := TB_PUTRATE
 	if bucketType == "_day"{
 		rateType = TB_PUTLEFT
 	}
 	if dayRateFun != nil{
-		tbs.tbHash[bucketKey].setDayRateFun(dayRateFun)
+		//tbs.tbHash[bucketKey].setDayRateFun(dayRateFun)
+		tb.setDayRateFun(dayRateFun)
 	}
 	//初始化令牌数
-	tbs.tbHash[bucketKey].putTokenIntoBucket(rateType)
+	tb.putTokenIntoBucket(rateType)
 	//开启定时令牌刷新
-	tbs.tbHash[bucketKey].startTimer()
+	tb.startTimer()
 	//缓存配置
 	tbs.setRateSize(bucketKey,rate,size)
 	//获取信号,缓存每日限流数据
 	utils.WrapGo(func() {
-		tbs.tbHash[bucketKey].catchExit()
+		tb.catchExit()
 	},"token bucket cache exit")
-	return tbs.tbHash[bucketKey]
+
+	return tb
 }
 func (tbs *tokenBucketSchedular) restartTimeBucket(bucketKey string,rate int,size int,duration  time.Duration,dayRateFun *DayRateFun){
-	tbs.Lock()
-	if _,ok:=tbs.tbHash[bucketKey];ok {
+	if oldTb,ok := tbs.tbKv.Load(bucketKey);ok{
 		log.Info("限流令牌tick[%d][%s],%d,%d桶重启中:",int(duration), bucketKey,rate,size)
-		tbs.tbHash[bucketKey].stopTokenBucketTimer()
-		delete(tbs.tbHash, bucketKey)
-		tbs.Unlock()
+		oldTb.(*tokenBucket).stopTokenBucketTimer()
+		//delete(tbs.tbHash, bucketKey)
+		tbs.tbKv.Delete(bucketKey)
+		//tbs.Unlock()
 		tbs.makeTimeBucket(bucketKey,rate,size,duration,dayRateFun)
 		log.Success("限流令牌tick[%d][%s],%d,%d桶重启完毕:",int(duration), bucketKey,rate,size)
-	}else{
-		tbs.Unlock()
 	}
 }
 func (tbs *tokenBucketSchedular) setRateSize(bucketKey string,rate int,size int){
-	tbs.Lock()
-	tbs.tbCache[bucketKey+"_rate"] = rate
-	tbs.tbCache[bucketKey+"_size"] = size
-	tbs.Unlock()
+	//tbs.Lock()
+	//tbs.tbCache[bucketKey+"_rate"] = rate
+	//tbs.tbCache[bucketKey+"_size"] = size
+	tbs.tcKv.Store(bucketKey+"_rate",rate)
+	tbs.tcKv.Store(bucketKey+"_size",size)
+	//tbs.Unlock()
 }
 
 type DayRateFun struct{
