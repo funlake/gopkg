@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a24b724-9f0a-477d-8066-157b4d40abf4" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/limiter/token_bucket.go" afterPath="$PROJECT_DIR$/limiter/token_bucket.go" />
-      <change beforePath="$PROJECT_DIR$/limiter/token_bucket_test.go" afterPath="$PROJECT_DIR$/limiter/token_bucket_test.go" />
-    </list>
+    <list default="true" id="2a24b724-9f0a-477d-8066-157b4d40abf4" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -80,8 +76,8 @@
       <file leaf-file-name="token_bucket.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/limiter/token_bucket.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
-              <caret line="44" column="32" lean-forward="false" selection-start-line="44" selection-start-column="32" selection-end-line="44" selection-end-column="32" />
+            <state relative-caret-position="1211">
+              <caret line="64" column="0" lean-forward="true" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
               <folding>
                 <element signature="e#17#190#0" expanded="true" />
               </folding>
@@ -392,8 +388,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/limiter/token_bucket.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="44" column="32" lean-forward="false" selection-start-line="44" selection-start-column="32" selection-end-line="44" selection-end-column="32" />
+        <state relative-caret-position="1211">
+          <caret line="64" column="0" lean-forward="true" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
           <folding>
             <element signature="e#17#190#0" expanded="true" />
           </folding>

@@ -22,12 +22,15 @@ func NewTokenBucketSchedular() *tokenBucketSchedular{
 type tokenBucketSchedular struct{
 	tbKv    sync.Map
 	tcKv	sync.Map
+	sync.Mutex
 }
 
 func (tbs *tokenBucketSchedular)GetTimeTokenBucket(bucketKey string,rate int,qps int,second  time.Duration,dayRateFun *DayRateFun)  *tokenBucket{
 	return tbs.makeTimeBucket(bucketKey,rate,qps,second,dayRateFun)
 }
 func (tbs *tokenBucketSchedular) makeTimeBucket(bucketKey string,rate int,size int,second  time.Duration,dayRateFun *DayRateFun) *tokenBucket{
+	tbs.Lock()
+	//defer tbs.Unlock()
 	if tbc,ok := tbs.tbKv.Load(bucketKey);ok{
 		crate,ok2 := tbs.tcKv.Load(bucketKey+"_rate")
 		csize,ok3 := tbs.tcKv.Load(bucketKey+"_size")
@@ -35,14 +38,13 @@ func (tbs *tokenBucketSchedular) makeTimeBucket(bucketKey string,rate int,size i
 			tbs.setRateSize(bucketKey,rate,size)
 		    tbs.restartTimeBucket(bucketKey,rate,size,second,dayRateFun)
 		}
+		tbs.Unlock()
 		return tbc.(*tokenBucket)
 	}
-	//tbs.Lock()
-
 	//tbs.tbHash[bucketKey] = &tokenBucket{bucket:make(chan int ,size ), rate:rate,size:size, bucketKey:bucketKey, bucketIsFull:false, second:second, ticker:tbTicker,dayTicker:true}
-
 	tb := &tokenBucket{bucket:make(chan int ,size ), rate:rate,size:size, bucketKey:bucketKey, bucketIsFull:false, second:second, ticker:tbTicker,dayTicker:true}
 	tbs.tbKv.Store(bucketKey,tb)
+	tbs.Unlock()
 	bucketType := bucketKey[len(bucketKey) - 4 :]
 	rateType   := TB_PUTRATE
 	if bucketType == "_day"{
@@ -62,7 +64,6 @@ func (tbs *tokenBucketSchedular) makeTimeBucket(bucketKey string,rate int,size i
 	utils.WrapGo(func() {
 		tb.catchExit()
 	},"token bucket cache exit")
-
 	return tb
 }
 func (tbs *tokenBucketSchedular) restartTimeBucket(bucketKey string,rate int,size int,duration  time.Duration,dayRateFun *DayRateFun){
