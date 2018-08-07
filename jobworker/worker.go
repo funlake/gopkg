@@ -4,13 +4,13 @@ import (
 	"github.com/funlake/gopkg/utils/log"
 )
 type Worker struct {
-	workerPool chan chan WorkerJob
-	jobChannel chan WorkerJob
+	workerPool chan chan WorkerNonBlockingJob
+	jobChannel chan WorkerNonBlockingJob
 }
-func NewWorker(workerPool chan chan WorkerJob) Worker {
+func NewWorker(workerPool chan chan WorkerNonBlockingJob) Worker {
 	worker := Worker{
 		workerPool: workerPool,
-		jobChannel: make(chan WorkerJob),
+		jobChannel: make(chan WorkerNonBlockingJob),
 	}
 	return worker
 }

@@ -44,7 +44,7 @@ type fastHttpProxyJob struct {
 func (job *fastHttpProxyJob) Id() string{
 	return job.m
 }
-func (job *fastHttpProxyJob) OnWorkerFull(dispatcher *BlockDispatcher){
+func (job *fastHttpProxyJob) OnWorkerFull(dispatcher *NonBlockingDispatcher){
 	log.Error("worker 繁忙")
 	job.r <- FastHttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
 }

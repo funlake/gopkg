@@ -133,11 +133,11 @@ func makeRequestWithBlockingFastHttp(dispatcher *BlockingDispatcher) error{
 	return nil
 }
 func TestNewFastHttpProxyJob(t *testing.T) {
-	dispatcher := NewNonBlockDispather(200,500)
+	dispatcher := NewNonBlockingDispather(200,500)
 	makeRequestWithFastHttp(dispatcher)
 }
 func TestNewHttpProxyJob(t *testing.T) {
-	dispatcher := NewNonBlockDispather(200,500)
+	dispatcher := NewNonBlockingDispather(200,500)
 	makeRequest(dispatcher)
 }
 func TestBlockingNewHttpProxyJob(t *testing.T) {

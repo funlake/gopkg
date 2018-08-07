@@ -5,22 +5,22 @@ import (
 "github.com/funlake/gopkg/utils"
 )
 
-type NonBlockDispatcher struct {
-	workerPool chan chan WorkerJob
-	jobQueue chan WorkerJob
+type NonBlockingDispatcher struct {
+	workerPool chan chan WorkerNonBlockingJob
+	jobQueue chan WorkerNonBlockingJob
 }
-func NewNonBlockDispather(maxWorker int,queueSize int) *NonBlockDispatcher {
-	dispatcher := &NonBlockDispatcher{}
+func NewNonBlockingDispather(maxWorker int,queueSize int) *NonBlockingDispatcher {
+	dispatcher := &NonBlockingDispatcher{}
 	//流水线长度
-	dispatcher.jobQueue = make(chan WorkerJob,queueSize)
+	dispatcher.jobQueue = make(chan WorkerNonBlockingJob,queueSize)
 	//流水线工人数量
-	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
+	dispatcher.workerPool = make(chan chan WorkerNonBlockingJob,maxWorker)
 	dispatcher.Run(maxWorker)
 	//稍微等下worker启动
 	time.Sleep(time.Nanosecond * 10)
 	return dispatcher
 }
-func (d *NonBlockDispatcher) Put(job WorkerJob) bool{
+func (d *NonBlockingDispatcher) Put(job WorkerNonBlockingJob) bool{
 	select {
 	case d.jobQueue <- job:
 		return true
@@ -30,7 +30,7 @@ func (d *NonBlockDispatcher) Put(job WorkerJob) bool{
 	}
 	return false
 }
-func (d *NonBlockDispatcher) Run(maxWorker int){
+func (d *NonBlockingDispatcher) Run(maxWorker int){
 	for i:=0 ;i<maxWorker;i++{
 		worker := NewWorker(d.workerPool)
 		worker.Ready()
@@ -44,7 +44,7 @@ func (d *NonBlockDispatcher) Run(maxWorker int){
 //症状是任务快速加入，然而worker繁忙导致管道堵塞，并发时，如果worker数量远小于并发，
 //如不做超时处理,则后续请求会在<-d.workerPool处等待很长时间，而真正进入转发阶段的消耗时间却并不多
 //所以后端服务无压力，而请求却堵在网关处!
-func (d *NonBlockDispatcher) Ready(){
+func (d *NonBlockingDispatcher) Ready(){
 	for{
 		select{
 		case job := <-d.jobQueue:
