@@ -41,3 +41,13 @@ func TestTimerCacheRedis_Get(t *testing.T) {
 		t.Error(err.Error())
 	}
 }
+
+func TestNilReturnFromRedis(t *testing.T)  {
+	initTest()
+	v,err := timercache.Get("gateway:proxy","access_token",3)
+	if err != nil{
+		t.Error(err.Error())
+	}else{
+		t.Log(v)
+	}
+}
