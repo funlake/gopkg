@@ -6,21 +6,21 @@ import (
 )
 
 type NonBlockingDispatcher struct {
-	workerPool chan chan WorkerNonBlockingJob
-	jobQueue chan WorkerNonBlockingJob
+	workerPool chan chan WorkerJob
+	jobQueue chan WorkerJob
 }
 func NewNonBlockingDispather(maxWorker int,queueSize int) *NonBlockingDispatcher {
 	dispatcher := &NonBlockingDispatcher{}
 	//流水线长度
-	dispatcher.jobQueue = make(chan WorkerNonBlockingJob,queueSize)
+	dispatcher.jobQueue = make(chan WorkerJob,queueSize)
 	//流水线工人数量
-	dispatcher.workerPool = make(chan chan WorkerNonBlockingJob,maxWorker)
+	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
 	dispatcher.Run(maxWorker)
 	//稍微等下worker启动
 	time.Sleep(time.Nanosecond * 10)
 	return dispatcher
 }
-func (d *NonBlockingDispatcher) Put(job WorkerNonBlockingJob) bool{
+func (d *NonBlockingDispatcher) Put(job WorkerJob) bool{
 	select {
 	case d.jobQueue <- job:
 		return true
@@ -52,7 +52,8 @@ func (d *NonBlockingDispatcher) Ready(){
 			case jobChan := <-d.workerPool :
 				jobChan <- job
 			default:
-				job.OnWorkerFull(d)
+				job.(WorkerNonBlockingJob).OnWorkerFull(d)
+				//job.OnWorkerFull(d)
 			}
 		}
 	}

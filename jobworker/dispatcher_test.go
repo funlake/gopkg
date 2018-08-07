@@ -13,7 +13,7 @@ var transport = &http.Transport{
 }
 var fasthttpClient = &fasthttp.Client{}
 func TestDispatcher_Put(t *testing.T) {
-	dispatcher := NewBlockDispather(2,10)
+	dispatcher := NewBlockingDispather(2,10)
 	for i:=0;i<10;i++{
 		dispatcher.Put(&simpleJob{})
 	}
@@ -25,15 +25,16 @@ func TestDispatcher_Put(t *testing.T) {
 }
 
 func BenchmarkDispatcher_Put(b *testing.B) {
-	dispatcher := NewBlockDispather(20000,500000)
+	dispatcher := NewBlockingDispather(20000,500000)
+	job := NewSimpleJob()
 	b.SetParallelism(100)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
-			dispatcher.Put(&simpleJob{})
+			dispatcher.Put(job)
 		}
 	})
 }
-func makeRequest(dispatcher *BlockDispatcher) error{
+func makeRequest(dispatcher *NonBlockingDispatcher) error{
 	now := time.Now()
 	req,_ := http.NewRequest("GET","http://www.baidu.com",nil)
     job := NewHttpProxyJob(transport,req,200,"get_baidu")
@@ -66,7 +67,7 @@ func makeRequest(dispatcher *BlockDispatcher) error{
 	}
 	return nil
 }
-func makeRequestWithFastHttp(dispatcher *BlockDispatcher) error{
+func makeRequestWithFastHttp(dispatcher *NonBlockingDispatcher) error{
 	url := "http://www.baidu.com"
 	now := time.Now()
 	req := fasthttp.AcquireRequest()
@@ -133,11 +134,13 @@ func makeRequestWithBlockingFastHttp(dispatcher *BlockingDispatcher) error{
 	return nil
 }
 func TestNewFastHttpProxyJob(t *testing.T) {
-	dispatcher := NewNonBlockingDispather(200,500)
-	makeRequestWithFastHttp(dispatcher)
+	dispatcher := NewNonBlockingDispather(2,500)
+	for i:=0;i<50;i++ {
+		makeRequestWithFastHttp(dispatcher)
+	}
 }
 func TestNewHttpProxyJob(t *testing.T) {
-	dispatcher := NewNonBlockingDispather(200,500)
+	dispatcher := NewNonBlockingDispather(2,500)
 	makeRequest(dispatcher)
 }
 func TestBlockingNewHttpProxyJob(t *testing.T) {

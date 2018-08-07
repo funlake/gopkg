@@ -7,23 +7,23 @@ import (
 
 // blocking dispather
 type BlockingDispatcher struct {
-	workerPool chan chan WorkerNonBlockingJob
-	jobQueue chan WorkerNonBlockingJob
+	workerPool chan chan WorkerJob
+	jobQueue chan WorkerJob
 }
 
 func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
 	dispatcher := &BlockingDispatcher{}
 	//流水线长度
-	dispatcher.jobQueue = make(chan WorkerNonBlockingJob,queueSize)
+	dispatcher.jobQueue = make(chan WorkerJob,queueSize)
 	//流水线工人数量
-	dispatcher.workerPool = make(chan chan WorkerNonBlockingJob,maxWorker)
+	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
 	dispatcher.Run(maxWorker)
 	//稍微等下worker启动
 	time.Sleep(time.Nanosecond * 10)
 	return dispatcher
 }
 
-func (d *BlockingDispatcher) Put(job WorkerNonBlockingJob) bool{
+func (d *BlockingDispatcher) Put(job WorkerJob) bool{
 	d.jobQueue <- job
 	return true
 }

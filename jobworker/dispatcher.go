@@ -4,7 +4,7 @@ import (
 	//"github.com/funlake/gopkg/utils/log"
 )
 type Dispatcher interface {
-	Put(job WorkerNonBlockingJob) bool
+	Put(job WorkerJob) bool
 	Run(maxWork int)
 	Ready()
 }
