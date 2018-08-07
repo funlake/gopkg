@@ -44,7 +44,8 @@ type fastHttpProxyJob struct {
 func (job *fastHttpProxyJob) Id() string{
 	return job.m
 }
-func (job *fastHttpProxyJob) OnWorkerFull(dispatcher *Dispatcher){
+func (job *fastHttpProxyJob) OnWorkerFull(dispatcher *BlockDispatcher){
+	log.Error("worker 繁忙")
 	job.r <- FastHttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
 }
 func(job *fastHttpProxyJob) Do() {
@@ -61,6 +62,7 @@ func(job *fastHttpProxyJob) Do() {
 	//TODO : 更多测试
 	//go func(res *http.Response,err error) {
 	job.r <- FastHttpProxyJobResponse{resp, err, 0}
+	time.Sleep(time.Second * 3)
 	//log.Info("%s -> fasthttp请求时间消耗 : %s",job.Id(),time.Since(now))
 	//}()
 }

@@ -13,7 +13,7 @@ var transport = &http.Transport{
 }
 var fasthttpClient = &fasthttp.Client{}
 func TestDispatcher_Put(t *testing.T) {
-	dispatcher := NewDispather(2,10)
+	dispatcher := NewBlockDispather(2,10)
 	for i:=0;i<10;i++{
 		dispatcher.Put(&simpleJob{})
 	}
@@ -25,7 +25,7 @@ func TestDispatcher_Put(t *testing.T) {
 }
 
 func BenchmarkDispatcher_Put(b *testing.B) {
-	dispatcher := NewDispather(20000,500000)
+	dispatcher := NewBlockDispather(20000,500000)
 	b.SetParallelism(100)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
@@ -33,7 +33,7 @@ func BenchmarkDispatcher_Put(b *testing.B) {
 		}
 	})
 }
-func makeRequest(dispatcher *Dispatcher) error{
+func makeRequest(dispatcher *BlockDispatcher) error{
 	now := time.Now()
 	req,_ := http.NewRequest("GET","http://www.baidu.com",nil)
     job := NewHttpProxyJob(transport,req,200,"get_baidu")
@@ -66,7 +66,7 @@ func makeRequest(dispatcher *Dispatcher) error{
 	}
 	return nil
 }
-func makeRequestWithFastHttp(dispatcher *Dispatcher) error{
+func makeRequestWithFastHttp(dispatcher *BlockDispatcher) error{
 	url := "http://www.baidu.com"
 	now := time.Now()
 	req := fasthttp.AcquireRequest()
@@ -99,15 +99,53 @@ func makeRequestWithFastHttp(dispatcher *Dispatcher) error{
 	return nil
 }
 
+
+func makeRequestWithBlockingFastHttp(dispatcher *BlockingDispatcher) error{
+	url := "http://www.baidu.com"
+	now := time.Now()
+	req := fasthttp.AcquireRequest()
+	req.SetRequestURI(url)
+	req.Header.SetMethod("POST")
+	//req.AppendBodyString(qs)
+	job := NewFastHttpProxyJob(fasthttpClient,req,200,"get_baidu_withfasthttp")
+	if dispatcher.Put(job){
+		//accessing baidu
+		select{
+		//3s超时控制
+		case <- time.After(time.Second * 3):
+			r := <- job.GetResChan()
+			if  r.Error == nil {
+				r.Response.Body()
+			}
+			job.Release()
+		case r := <- job.GetResChan():
+			if  r.Error != nil {
+				return r.Error
+			}else {
+				//r.Response.Body()
+				log.Success("fasthttp 请求返回 http status : %d,请求时间 : %s",r.Response.StatusCode(),time.Since(now))
+			}
+			job.Release()
+		}
+	}else{
+		//queue is full
+	}
+	return nil
+}
 func TestNewFastHttpProxyJob(t *testing.T) {
-	dispatcher := NewDispather(200,500)
+	dispatcher := NewNonBlockDispather(200,500)
 	makeRequestWithFastHttp(dispatcher)
 }
 func TestNewHttpProxyJob(t *testing.T) {
-	dispatcher := NewDispather(200,500)
+	dispatcher := NewNonBlockDispather(200,500)
 	makeRequest(dispatcher)
 }
-
+func TestBlockingNewHttpProxyJob(t *testing.T) {
+	dispatcher := NewBlockingDispather(2,5)
+	for i:=0;i<50;i++ {
+		makeRequestWithBlockingFastHttp(dispatcher)
+	}
+}
 //func BenchmarkDispatcher_WithTransport(b *testing.B) {
 //	//b.SetParallelism(10)
 //	//b.RunParallel(func(pb *testing.PB) {

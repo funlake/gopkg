@@ -15,6 +15,7 @@ func (sj *simpleJob) Do(){
 func (sj *simpleJob)Id() string{
 	return ""
 }
-func (sj *simpleJob)OnWorkerFull(dispatcher *Dispatcher){
+func (sj *simpleJob)OnWorkerFull(dispatcher *BlockDispatcher){
 	//log.Warning("Worker is full")
+	//dispatcher.Put(sj)
 }

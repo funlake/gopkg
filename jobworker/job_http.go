@@ -50,7 +50,7 @@ type httpProxyJob struct {
 func (job *httpProxyJob) Id() string{
 	return job.m
 }
-func (job *httpProxyJob) OnWorkerFull(dispatcher *Dispatcher){
+func (job *httpProxyJob) OnWorkerFull(dispatcher *BlockDispatcher){
 	job.r <- HttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
 }
 func(job *httpProxyJob) Do() {
