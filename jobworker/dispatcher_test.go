@@ -144,7 +144,7 @@ func TestNewHttpProxyJob(t *testing.T) {
 	makeRequest(dispatcher)
 }
 func TestBlockingNewHttpProxyJob(t *testing.T) {
-	dispatcher := NewBlockingDispather(2,5)
+	dispatcher := NewBlockingDispather(10,100)
 	for i:=0;i<50;i++ {
 		makeRequestWithBlockingFastHttp(dispatcher)
 	}
