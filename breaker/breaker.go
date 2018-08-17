@@ -53,7 +53,6 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func()){
 			go failfun()
 			return
 		}
-		//return
 	}
 	if run {
 		cxt, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(b.metrics.GetTimeout()))
@@ -69,11 +68,11 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func()){
 				b.status = 2
 			}
 			utils.WrapGo(func() {
+				failfun()
 				b.errChans <- breakerItem{
 					notations:b.id,
 				}
 			},"breaking")
-			go failfun()
 		case <-ch:
 			b.metrics.pass = b.metrics.pass + 1
 			go okfun()
@@ -92,7 +91,6 @@ func (b *breaker) tick(){
 				b.status = 0
 			}
 		}
-		b.metrics.broken = 0
 		b.metrics.pass = 0
 		go func() {
 			for {
@@ -117,15 +115,5 @@ func (b *breaker) isHalfopen() bool{
 }
 
 func (b *breaker) isClose() bool{
-	//if (b.metrics.pass > 0 ||  b.metrics.broken > 0) && b.status != 2{
-	//	if ((b.metrics.broken / (b.metrics.broken + b.metrics.pass)) * 100) >= b.rate {
-	//		log.Error("broken : %d,pass : %d",b.metrics.broken  ,b.metrics.pass)
-	//		b.status = 2
-	//	} else{
-	//		b.status = 0
-	//	}
-	//}
-	//return b.status == 2
-
 	return b.status == 2
 }
