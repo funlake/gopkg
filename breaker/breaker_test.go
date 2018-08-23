@@ -18,7 +18,7 @@ import (
 //			//log.Info("%s",time.Since(now))
 //		}, func() {
 //			log.Success("goog job")
-//		}, func() {
+//		}, func(run bool) {
 //			log.Error("break!")
 //		})
 //		time.Sleep(time.Millisecond * 100)

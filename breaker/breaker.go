@@ -37,10 +37,10 @@ func (b *breaker) init(id string,timeout int,window int){
 	b.metrics = NewMetrics().NewEntity(id,timeout, window)
 	go b.tick()
 }
-func (b *breaker) Run(fun func (),okfun func(),failfun func()){
+func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
 	if b.isClose(){
-		go failfun()
+		go failfun(false)
 		return
 	}
 	if b.isHalfopen(){
@@ -50,7 +50,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func()){
 			run = true
 		}else{
 			run = false
-			go failfun()
+			go failfun(false)
 			return
 		}
 	}
@@ -68,7 +68,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func()){
 				b.status = 2
 			}
 			utils.WrapGo(func() {
-				failfun()
+				failfun(true)
 				b.errChans <- breakerItem{
 					notations:b.id,
 				}
