@@ -18,8 +18,8 @@ func NewBreaker(id string,timeout int,window int,rate int) *breaker {
 	if c,ok := breakerMap.Load(id);ok{
 		return c.(*breaker)
 	}
-	b := &breaker{id:id,rate:rate,status:0,errChans:make(chan breakerItem,100)}
-	b.init(id,timeout,window)
+	b := &breaker{id:id,rate:rate,status:0,errChans:make(chan breakerItem,100),timeout:timeout,window:window,pass:0}
+	b.init()
 	breakerMap.Store(id,b)
 	return b
 }
@@ -31,11 +31,14 @@ type breaker struct{
 	rate int
 	status int
 	errChans chan breakerItem
-	metrics *MestricsEntity
+	//metrics *MestricsEntity
+	timeout int
+	pass int
+	window int
 }
 
-func (b *breaker) init(id string,timeout int,window int){
-	b.metrics = NewMetrics().NewEntity(id,timeout, window)
+func (b *breaker) init(){
+	//b.metrics = NewMetrics().NewEntity(id,timeout, window)
 	go b.tick()
 }
 func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
@@ -43,14 +46,14 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	if b.isOpen(){
 		if len(b.errChans) > 0{
 			//log.Warning("%d,%d,%d",b.metrics.pass,len(b.errChans), len(b.errChans) / (b.metrics.pass + len(b.errChans)))
-			if ( len(b.errChans) / (b.metrics.pass + len(b.errChans)) ) * 100 >= b.rate {
-				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(len(b.errChans) / (b.metrics.pass + len(b.errChans)) )* 100)
-				b.status = 2
-				run = false
+			if ( len(b.errChans) / (b.pass + len(b.errChans)) ) * 100 >= b.rate {
+				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(len(b.errChans) / (b.pass + len(b.errChans)) )* 100)
+				b.close()
+				return
 			}
 		}else{
-			if b.status > 0 {
-				b.status = 0
+			if !b.isOpen() {
+				b.open()
 			}
 		}
 	}
@@ -59,9 +62,9 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		return
 	}
 	if b.isHalfopen(){
-		if b.metrics.pass > 0 {
-			if ( b.metrics.pass / (b.metrics.pass + len(b.errChans)) ) * 100 >= (100 - b.rate) {
-				b.status = 0
+		if b.pass > 0 {
+			if ( b.pass / (b.pass + len(b.errChans)) ) * 100 >= (100 - b.rate) {
+				b.open()
 				run = true
 			}
 		}
@@ -71,47 +74,47 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 			if i > 50 {
 				run = true
 			} else {
-				run = false
 				go failfun(false)
 				return
 			}
 		}
 	}
 	if run {
-		cxt, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(b.metrics.GetTimeout()))
-
+		cxt, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(b.timeout))
 		ch := make(chan bool)
 		go func() {
 			fun()
 			ch <- true
 		}()
 		select {
-		case <-cxt.Done():
-			log.Success("触发超时:%d秒",b.metrics.GetTimeout())
-			b.metrics.broken = b.metrics.broken + 1
-			if b.status == 1{
-				b.status = 2
-			}
-			utils.WrapGo(func() {
-				go failfun(true)
-				b.errChans <- breakerItem{
-					notations:b.id,
+			case <-cxt.Done():
+				if b.isHalfopen(){
+					b.close()
 				}
-			},"breaking")
-			return
-		case <-ch:
-			b.metrics.pass = b.metrics.pass + 1
-			go okfun()
-			return
+				utils.WrapGo(func() {
+					select{
+						case b.errChans <- breakerItem{notations:b.id}:
+						default:
+							//full of err chan means all the things go wrong badly
+							b.close()
+					}
+					//go failfun(true)
+					//b.errChans <- breakerItem{notations:b.id}
+				},"breaking")
+				return
+			case <-ch:
+				b.pass = b.pass + 1
+				go okfun()
+				return
 		}
 	}
 }
 
 func (b *breaker) tick(){
-	breakerTimer.SetInterval(b.metrics.GetWindow(), func() {
-		b.metrics.pass = 0
-		if b.status == 2 {
-			b.status = 1
+	breakerTimer.SetInterval(b.window, func() {
+		b.pass = 0
+		if b.isClose() {
+			b.halfopen()
 		}
 		go func() {
 			for {
@@ -131,10 +134,18 @@ func (b *breaker) isHalfopen() bool{
 	return b.status == 1
 }
 
+func (b *breaker) halfopen(){
+	b.status = 1
+}
 func (b *breaker) isClose() bool{
 	return b.status == 2
 }
-
+func (b *breaker) close()  {
+	b.status = 2
+}
 func (b *breaker) isOpen() bool{
 	return b.status == 0
+}
+func (b *breaker) open(){
+	b.status = 0
 }

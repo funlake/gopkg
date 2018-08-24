@@ -3,13 +3,14 @@ package breaker
 import (
 	"testing"
 	. "github.com/smartystreets/goconvey/convey"
+	"net/http"
 )
 
 //func TestBreaker_Run(t *testing.T) {
-//	bre := NewBreaker("hello",2,3,10)
+//	bre := NewBreaker("hello",2,30,10)
 //	for {
 //		bre.Run(func() {
-//			res,_ := http.Get("http://admin.etcchebao.com/index2.php")
+//			res,_ := http.Get("http://www.google.com")
 //			log.Success("%d",res.StatusCode)
 //			//now := time.Now()
 //			//rand.Seed(time.Now().UnixNano())
@@ -26,9 +27,22 @@ import (
 //}
 func BenchmarkBreaker_Run(b *testing.B) {
 	b.SetParallelism(20)
+	bre := NewBreaker("request google",2,30,10)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
-			NewBreaker("hello",2,3,10)
+			bre.Run(func() {
+				 http.Get("http://www.google.com")
+				//log.Success("%d",res.StatusCode)
+				//now := time.Now()
+				//rand.Seed(time.Now().UnixNano())
+				//t := rand.Intn(5)
+				//time.Sleep(time.Second * time.Duration(t))
+				//log.Info("%s",time.Since(now))
+			}, func() {
+				//log.Success("goog job")
+			}, func(run bool) {
+				//log.Error("break!")
+			})
 		}
 	})
 
