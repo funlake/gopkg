@@ -40,6 +40,18 @@ func (b *breaker) init(id string,timeout int,window int){
 }
 func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
+	if b.isOpen(){
+		if len(b.errChans) > 0{
+			if ( len(b.errChans) / (b.metrics.pass + len(b.errChans)) ) * 100 >= b.rate {
+				b.status = 2
+				run = false
+			}
+		}else{
+			if b.status > 0 {
+				b.status = 0
+			}
+		}
+	}
 	if b.isClose(){
 		go failfun(false)
 		return
@@ -87,15 +99,6 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 
 func (b *breaker) tick(){
 	breakerTimer.SetInterval(b.metrics.GetWindow(), func() {
-		if len(b.errChans) > 0{
-			if ( len(b.errChans) / (b.metrics.pass + len(b.errChans)) ) * 100 >= b.rate {
-				b.status = 2
-			}
-		}else{
-			if b.status > 0 {
-				b.status = 0
-			}
-		}
 		b.metrics.pass = 0
 		go func() {
 			for {
@@ -121,4 +124,8 @@ func (b *breaker) isHalfopen() bool{
 
 func (b *breaker) isClose() bool{
 	return b.status == 2
+}
+
+func (b *breaker) isOpen() bool{
+	return b.status == 0
 }
