@@ -42,6 +42,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
 	if b.isOpen(){
 		if len(b.errChans) > 0{
+			log.Warning("%d,%d,%d",b.metrics.pass,len(b.errChans), len(b.errChans) / (b.metrics.pass + len(b.errChans)))
 			if ( len(b.errChans) / (b.metrics.pass + len(b.errChans)) ) * 100 >= b.rate {
 				b.status = 2
 				run = false
@@ -57,14 +58,22 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		return
 	}
 	if b.isHalfopen(){
-		rand.Seed(time.Now().UnixNano())
-		i := rand.Intn(100)
-		if i > 50{
-			run = true
-		}else{
-			run = false
-			go failfun(false)
-			return
+		if b.metrics.pass > 0 {
+			if ( b.metrics.pass / (b.metrics.pass + len(b.errChans)) ) * 100 >= (100 - b.rate) {
+				b.status = 0
+				run = true
+			}
+		}
+		if !b.isOpen() {
+			rand.Seed(time.Now().UnixNano())
+			i := rand.Intn(100)
+			if i > 50 {
+				run = true
+			} else {
+				run = false
+				go failfun(false)
+				return
+			}
 		}
 	}
 	if run {
@@ -104,7 +113,9 @@ func (b *breaker) tick(){
 			for {
 				select {
 				case <- b.errChans:
+
 				default:
+					log.Success("【熔断】清空错误队列")
 					return
 				}
 			}
