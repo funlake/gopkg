@@ -7,6 +7,7 @@ import (
 	"sync"
 	"math/rand"
 	"github.com/funlake/gopkg/utils"
+	"github.com/funlake/gopkg/utils/log"
 )
 var breakerTimer = timer.NewTimer()
 var breakerMap sync.Map
@@ -56,6 +57,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	}
 	if run {
 		cxt, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(b.metrics.GetTimeout()))
+
 		ch := make(chan bool)
 		go func() {
 			fun()
@@ -63,19 +65,22 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		}()
 		select {
 		case <-cxt.Done():
+			log.Success("触发超时:%d秒",b.metrics.GetTimeout())
 			b.metrics.broken = b.metrics.broken + 1
 			if b.status == 1{
 				b.status = 2
 			}
 			utils.WrapGo(func() {
-				failfun(true)
+				go failfun(true)
 				b.errChans <- breakerItem{
 					notations:b.id,
 				}
 			},"breaking")
+			return
 		case <-ch:
 			b.metrics.pass = b.metrics.pass + 1
 			go okfun()
+			return
 		}
 	}
 }
