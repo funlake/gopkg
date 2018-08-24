@@ -109,6 +109,9 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 func (b *breaker) tick(){
 	breakerTimer.SetInterval(b.metrics.GetWindow(), func() {
 		b.metrics.pass = 0
+		if b.status == 2 {
+			b.status = 1
+		}
 		go func() {
 			for {
 				select {
@@ -120,11 +123,6 @@ func (b *breaker) tick(){
 			}
 		}()
 
-	})
-	breakerTimer.SetInterval(b.metrics.GetWindow() * 2, func() {
-		if b.status == 2 {
-			b.status = 1
-		}
 	})
 }
 
