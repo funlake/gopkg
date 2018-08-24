@@ -13,7 +13,7 @@ type HttpProxyJobResponse struct{
 	Dur time.Duration
 }
 var once = &sync.Once{}
-var httpResChan chan chan HttpProxyJobResponse
+//var httpResChan chan chan HttpProxyJobResponse
 var httpProxyJobPool = sync.Pool{
 	New: func() interface{}{
 		return &httpProxyJob{}
@@ -22,22 +22,23 @@ var httpProxyJobPool = sync.Pool{
 func initHttpProxyResChan(chanSize int){
 	once.Do(func() {
 		log.Success("Res channel size:%d",chanSize)
-		httpResChan = make(chan chan HttpProxyJobResponse,chanSize)
-		for i:=0;i<chanSize;i++{
-			httpResChan <- make(chan HttpProxyJobResponse)
-		}
+		//httpResChan = make(chan chan HttpProxyJobResponse,chanSize)
+		//for i:=0;i<chanSize;i++{
+		//	httpResChan <- make(chan HttpProxyJobResponse)
+		//}
 	})
 }
 func NewHttpProxyJob(transport *http.Transport,q *http.Request,rcsize int,id string) *httpProxyJob {
-	if httpResChan == nil{
-		initHttpProxyResChan(rcsize)
-	}
-	//job := httpProxyJobPool.Get().(*httpProxyJob)
-	//job.q = q
-	//job.m = id
-	//job.t = transport
-	job := &httpProxyJob{q:q,m:id,t:transport}
-	job.setResChan()
+	//if httpResChan == nil{
+	//	initHttpProxyResChan(rcsize)
+	//}
+	job := httpProxyJobPool.Get().(*httpProxyJob)
+	job.q = q
+	job.m = id
+	job.t = transport
+	job.r = make(chan HttpProxyJobResponse)
+	//job := &httpProxyJob{q:q,m:id,t:transport,r: make(chan HttpProxyJobResponse)}
+	//job.setResChan()
 	return job
 }
 
@@ -73,14 +74,15 @@ func (job *httpProxyJob) GetResChan() chan HttpProxyJobResponse {
 	return job.r
 }
 func (job *httpProxyJob) Release()  {
-	job.putResChan()
+	<-job.r
+	//job.putResChan()
 	//httpProxyJobPool.Put(job)
 }
 
-func (job *httpProxyJob) setResChan(){
- 	job.r = <-httpResChan
-}
-
-func (job *httpProxyJob) putResChan(){
-	httpResChan <- job.r
-}
+//func (job *httpProxyJob) setResChan(){
+// 	job.r = <-httpResChan
+//}
+//
+//func (job *httpProxyJob) putResChan(){
+//	httpResChan <- job.r
+//}
