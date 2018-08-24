@@ -115,7 +115,6 @@ func (b *breaker) tick(){
 				case <- b.errChans:
 
 				default:
-					log.Success("【熔断】清空错误队列")
 					return
 				}
 			}
