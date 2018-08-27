@@ -44,7 +44,7 @@ func (b *breaker) init(){
 }
 func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
-	if b.isOpen(){
+	if b.isClose(){
 		//if len(b.errChans) > 0{
 		//	log.Warning("%d,%d,%d",b.pass,len(b.errChans), len(b.errChans) / (b.pass + len(b.errChans)))
 		//	if ( len(b.errChans) / (b.pass + len(b.errChans)) ) * 100 >= b.rate {
@@ -55,15 +55,15 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		if(b.broken > 0) {
 			if (b.broken / (b.pass + b.broken)) * 100 >= b.rate{
 				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(b.broken / (b.pass + b.broken) )* 100)
-				b.close()
+				b.open()
 			}
 		}else{
-			if !b.isOpen() {
-				b.open()
+			if !b.isClose() {
+				b.close()
 			}
 		}
 	}
-	if b.isClose(){
+	if b.isOpen(){
 		go failfun(false)
 		return
 	}
@@ -71,11 +71,11 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		if b.pass > 0 {
 			//if ( b.pass / (b.pass + len(b.errChans)) ) * 100 >= (100 - b.rate) {
 			if ((b.pass / (b.pass + b.broken)) * 100) >= (100 - b.rate){
-				b.open()
+				b.close()
 				run = true
 			}
 		}
-		if !b.isOpen() {
+		if !b.isClose() {
 			rand.Seed(time.Now().UnixNano())
 			i := rand.Intn(100)
 			if i > 50 {
@@ -96,7 +96,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		select {
 			case <-cxt.Done():
 				if b.isHalfopen(){
-					b.close()
+					b.open()
 				}
 				b.broken = b.broken + 1
 				//utils.WrapGo(func() {
@@ -110,6 +110,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 				//	//go failfun(true)
 				//	//b.errChans <- breakerItem{notations:b.id}
 				//},"breaking")
+				go failfun(true)
 				return
 			case <-ch:
 				b.pass = b.pass + 1
@@ -123,7 +124,7 @@ func (b *breaker) tick(){
 	breakerTimer.SetInterval(b.window, func() {
 		b.pass = 0
 		b.broken = 0
-		if b.isClose() {
+		if b.isOpen() {
 			b.halfopen()
 		}
 		//go func() {
@@ -148,14 +149,15 @@ func (b *breaker) halfopen(){
 	b.status = 1
 }
 func (b *breaker) isClose() bool{
-	return b.status == 2
-}
-func (b *breaker) close()  {
-	b.status = 2
-}
-func (b *breaker) isOpen() bool{
 	return b.status == 0
 }
-func (b *breaker) open(){
+func (b *breaker) close()  {
 	b.status = 0
+}
+func (b *breaker) isOpen() bool{
+	return b.status == 2
+}
+//打开熔断器
+func (b *breaker) open(){
+	b.status = 2
 }
