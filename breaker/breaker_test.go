@@ -4,6 +4,7 @@ import (
 	"testing"
 	. "github.com/smartystreets/goconvey/convey"
 	"net/http"
+	"time"
 )
 
 //func TestBreaker_Run(t *testing.T) {
@@ -58,3 +59,16 @@ func TestNewBreaker(t *testing.T) {
 		So(b,ShouldEqual,c)
 	})
 }
+//
+//func TestBreakerPassBreaker(t *testing.T) {
+//	b := NewBreaker("hello",2,30,10)
+//	for i:=1;i<=100;i++{
+//		go func(i int) {
+//			b.pass = b.pass + i
+//		}(i)
+//	}
+//	time.Sleep(time.Second * 1)
+//	Convey("roundtine object counter",t, func() {
+//		So(b.pass,ShouldEqual,5050)
+//	})
+//}
