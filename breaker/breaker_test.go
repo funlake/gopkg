@@ -4,7 +4,6 @@ import (
 	"testing"
 	. "github.com/smartystreets/goconvey/convey"
 	"net/http"
-	"time"
 )
 
 //func TestBreaker_Run(t *testing.T) {
