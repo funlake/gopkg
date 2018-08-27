@@ -45,11 +45,10 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
 	if b.isOpen(){
 		if len(b.errChans) > 0{
-			//log.Warning("%d,%d,%d",b.metrics.pass,len(b.errChans), len(b.errChans) / (b.metrics.pass + len(b.errChans)))
+			log.Warning("%d,%d,%d",b.pass,len(b.errChans), len(b.errChans) / (b.pass + len(b.errChans)))
 			if ( len(b.errChans) / (b.pass + len(b.errChans)) ) * 100 >= b.rate {
 				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(len(b.errChans) / (b.pass + len(b.errChans)) )* 100)
 				b.close()
-				return
 			}
 		}else{
 			if !b.isOpen() {
@@ -94,7 +93,8 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 				utils.WrapGo(func() {
 					select{
 						case b.errChans <- breakerItem{notations:b.id}:
-						default:
+							log.Error("timeout happen")
+						case <- time.After(time.Millisecond * 100):
 							//full of err chan means all the things go wrong badly
 							b.close()
 					}
