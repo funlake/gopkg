@@ -46,10 +46,13 @@ func (b *breaker) init(){
 }
 func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
+	//if b.pass+b.broken > 0 {
+	//	log.Warning("超时次数：%d ，正常次数：%d ,比率 ：%d",b.broken,b.pass,(b.broken * 100 / (b.broken + b.pass)) )
+	//}
 	if b.isClose(){
 		if(b.broken >= b.min) {
-			if (b.broken / (b.pass + b.broken)) * 100 >= b.rate{
-				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(b.broken / (b.pass + b.broken) )* 100)
+			if (b.broken * 100 / (b.pass + b.broken)) >= b.rate{
+				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(b.broken * 100 / (b.pass + b.broken) ))
 				b.open()
 			}
 		}else{
@@ -65,7 +68,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	if b.isHalfopen(){
 		if b.pass > 0 {
 			//if ( b.pass / (b.pass + len(b.errChans)) ) * 100 >= (100 - b.rate) {
-			if ((b.pass / (b.pass + b.broken)) * 100) >= (100 - b.rate){
+			if (b.pass * 100 / (b.pass + b.broken)) >= (100 - b.rate){
 				b.close()
 				run = true
 			}
