@@ -23,9 +23,6 @@ func NewBreaker(id string,timeout int,window int,rate int,min int) *breaker {
 	breakerMap.Store(id,b)
 	return b
 }
-type breakerItem struct{
-	notations string
-}
 type breaker struct{
 	id string
 	rate int
@@ -52,7 +49,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	if b.isClose(){
 		if(b.broken >= b.min) {
 			if (b.broken * 100 / (b.pass + b.broken)) >= b.rate{
-				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(b.broken * 100 / (b.pass + b.broken) ))
+				log.Error("%s 触发熔断,超时请求比率: %d%%",b.id,(b.broken * 100 / (b.pass + b.broken) ))
 				b.open()
 			}
 		}else{
