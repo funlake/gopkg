@@ -14,11 +14,11 @@ var breakerMap sync.Map
 func init(){
 	breakerTimer.Ready()
 }
-func NewBreaker(id string,timeout int,window int,rate int) *breaker {
+func NewBreaker(id string,timeout int,window int,rate int,min int) *breaker {
 	if c,ok := breakerMap.Load(id);ok{
 		return c.(*breaker)
 	}
-	b := &breaker{id:id,rate:rate,status:0,/*errChans:make(chan breakerItem,100),*/timeout:timeout,window:window,pass:0,broken:0}
+	b := &breaker{id:id,rate:rate,status:0,/*errChans:make(chan breakerItem,100),*/timeout:timeout,window:window,pass:0,broken:0,min:min}
 	b.init()
 	breakerMap.Store(id,b)
 	return b
@@ -36,6 +36,8 @@ type breaker struct{
 	pass int
 	broken int
 	window int
+	//至少出现多少次超时才熔断
+	min int
 }
 
 func (b *breaker) init(){
@@ -45,14 +47,7 @@ func (b *breaker) init(){
 func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
 	if b.isClose(){
-		//if len(b.errChans) > 0{
-		//	log.Warning("%d,%d,%d",b.pass,len(b.errChans), len(b.errChans) / (b.pass + len(b.errChans)))
-		//	if ( len(b.errChans) / (b.pass + len(b.errChans)) ) * 100 >= b.rate {
-		//		log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(len(b.errChans) / (b.pass + len(b.errChans)) )* 100)
-		//		b.close()
-		//	}
-		//}
-		if(b.broken > 0) {
+		if(b.broken >= b.min) {
 			if (b.broken / (b.pass + b.broken)) * 100 >= b.rate{
 				log.Error("%s 触发熔断,超时请求比率: %d%",b.id,(b.broken / (b.pass + b.broken) )* 100)
 				b.open()
@@ -99,18 +94,8 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 					b.open()
 				}
 				b.broken = b.broken + 1
-				//utils.WrapGo(func() {
-				//	select{
-				//		case b.errChans <- breakerItem{notations:b.id}:
-				//			log.Error("timeout happen")
-				//		case <- time.After(time.Millisecond * 100):
-				//			//full of err chan means all the things go wrong badly
-				//			b.close()
-				//	}
-				//	//go failfun(true)
-				//	//b.errChans <- breakerItem{notations:b.id}
-				//},"breaking")
 				go failfun(true)
+				<-ch
 				return
 			case <-ch:
 				b.pass = b.pass + 1
@@ -127,17 +112,6 @@ func (b *breaker) tick(){
 		if b.isOpen() {
 			b.halfopen()
 		}
-		//go func() {
-		//	for {
-		//		select {
-		//		case <- b.errChans:
-		//
-		//		default:
-		//			return
-		//		}
-		//	}
-		//}()
-
 	})
 }
 
