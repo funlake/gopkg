@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	//"github.com/funlake/gopkg/utils"
 	"github.com/funlake/gopkg/utils/log"
+	"github.com/funlake/gopkg/utils"
 )
 var breakerTimer = timer.NewTimer()
 var breakerMap sync.Map
@@ -39,7 +40,7 @@ type breaker struct{
 
 func (b *breaker) init(){
 	//b.metrics = NewMetrics().NewEntity(id,timeout, window)
-	go b.tick()
+	utils.WrapGo(func() {b.tick()},"breaker-loopcheck")
 }
 func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
@@ -59,7 +60,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		}
 	}
 	if b.isOpen(){
-		go failfun(false)
+		utils.WrapGo(func() {failfun(false)},"failfun-open")
 		return
 	}
 	if b.isHalfopen(){
@@ -76,7 +77,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 			if i > 50 {
 				run = true
 			} else {
-				go failfun(false)
+				utils.WrapGo(func() {failfun(false)},"failfun-halfopen")
 				return
 			}
 		}
@@ -84,22 +85,26 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	if run {
 		cxt, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(b.timeout))
 		ch := make(chan bool)
-		go func() {
+		utils.WrapGo(func() {
 			fun()
 			ch <- true
-		}()
+		},"breaker run")
 		select {
 			case <-cxt.Done():
 				if b.isHalfopen(){
 					b.open()
 				}
 				b.broken = b.broken + 1
-				go failfun(true)
-				<-ch
+				utils.WrapGo(func() {
+					failfun(true)
+					<-ch
+				},"failfun")
 				return
 			case <-ch:
 				b.pass = b.pass + 1
-				go okfun()
+				utils.WrapGo(func() {
+					okfun()
+				},"okfun")
 				return
 		}
 	}
