@@ -27,7 +27,7 @@ import (
 //}
 func BenchmarkBreaker_Run(b *testing.B) {
 	b.SetParallelism(20)
-	bre := NewBreaker("request google",2,30,10)
+	bre := NewBreaker("request google",2,30,10,3)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next(){
 			bre.Run(func() {
@@ -49,12 +49,12 @@ func BenchmarkBreaker_Run(b *testing.B) {
 }
 
 func TestNewBreaker(t *testing.T) {
-	b := NewBreaker("hello",2,3,10)
+	b := NewBreaker("hello",2,3,10,3)
 	Convey("new breaker",t, func() {
 		So(b,ShouldNotBeNil)
 	})
 	Convey("twice new calling",t,func(){
-		c := NewBreaker("hello",2,3,10)
+		c := NewBreaker("hello",2,3,10,3)
 		So(b,ShouldEqual,c)
 	})
 }
