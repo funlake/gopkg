@@ -15,11 +15,12 @@ var breakerMap sync.Map
 func init(){
 	breakerTimer.Ready()
 }
-func NewBreaker(id string,timeout int,window int,rate int,min int) *breaker {
+func NewBreaker(id string) *breaker {
 	if c,ok := breakerMap.Load(id);ok{
 		return c.(*breaker)
 	}
-	b := &breaker{id:id,rate:rate,status:0,/*errChans:make(chan breakerItem,100),*/timeout:timeout,window:window,pass:0,broken:0,min:min}
+	//b := &breaker{id:id,rate:rate,status:0,/*errChans:make(chan breakerItem,100),*/timeout:timeout,window:window,pass:0,broken:0,min:min}
+	b := &breaker{id:id}
 	b.init()
 	breakerMap.Store(id,b)
 	return b
@@ -119,7 +120,19 @@ func (b *breaker) tick(){
 		}
 	})
 }
+func (b *breaker) SetWindow(window int)  {
+	b.window = window
+}
 
+func (b *breaker) SetRate(rate int){
+	b.rate = rate
+}
+func (b *breaker) SetMin(min int){
+	b.min = min
+}
+func (b *breaker) SetTimemout(timeout int){
+	b.timeout = timeout
+}
 func (b *breaker) isHalfopen() bool{
 	return b.status == 1
 }
