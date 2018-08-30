@@ -9,7 +9,7 @@ import (
 type BlockingDispatcher struct {
 	workerPool chan chan WorkerJob
 	jobQueue chan WorkerJob
-	failQueue chan WorkerJob
+	//failQueue chan WorkerJob
 }
 
 func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
@@ -19,7 +19,7 @@ func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
 	//流水线工人数量
 	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
 	//失败队列
-	dispatcher.failQueue = make(chan WorkerJob,queueSize * 2)
+	//dispatcher.failQueue = make(chan WorkerJob,queueSize * 2)
 	dispatcher.Run(maxWorker)
 	//稍微等下worker启动
 	time.Sleep(time.Nanosecond * 10)
@@ -31,7 +31,7 @@ func (d *BlockingDispatcher) Put(job WorkerJob) bool{
 		case d.jobQueue <- job:
 			return true
 		default :
-			d.failQueue <- job
+			//d.failQueue <- job
 			return false
 	}
 
@@ -43,20 +43,20 @@ func (d *BlockingDispatcher) Run(maxWorker int){
 		worker.Ready()
 	}
 	utils.WrapGo(func() {
-		go d.Recover()
+		//go d.Recover()
 		d.Ready()
 	},"dispather run")
 }
-func (d *BlockingDispatcher) Recover(){
-	for {
-		select {
-			case job := <- d.failQueue:
-				d.jobQueue <- job
-			default :
-		}
-		time.Sleep(time.Second * 1)
-	}
-}
+//func (d *BlockingDispatcher) Recover(){
+//	for {
+//		select {
+//			case job := <- d.failQueue:
+//				d.jobQueue <- job
+//			default :
+//		}
+//		time.Sleep(time.Second * 1)
+//	}
+//}
 //后端持续处理需要堵塞并后续执行，故无需超时处理
 func (d *BlockingDispatcher) Ready(){
 	for{
@@ -65,8 +65,6 @@ func (d *BlockingDispatcher) Ready(){
 			select {
 				case jobChan := <-d.workerPool :
 					jobChan <- job
-				default:
-					d.failQueue <- job
 			}
 		}
 	}
