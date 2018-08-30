@@ -66,7 +66,9 @@ func (tw *timeWheel) ReWheel( si *SlotItem,curpos int){
 	si.pos = findSlot
 	go func(si *SlotItem){
 		//logs.Warn(cap(tw.slot[si.pos]))
+		tw.mu.Lock()
 		tw.slot[si.pos] <- si
+		tw.mu.Unlock()
 	}(si)
 }
 func (tw *timeWheel) Invoke(){
