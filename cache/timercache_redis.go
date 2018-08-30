@@ -51,8 +51,8 @@ func (tc *TimerCacheRedis) Get(hk string,k string,wheel int) (string,error){
 				//假如redis服务器挂了,得保留之前的本地缓存值
 				if err != nil {
 					if strings.Contains(err.Error(),"nil returned"){
-						log.Error("Empty value deteced(%d s) : %s",wheel,localCacheKey,err.Error())
-						//tc.ticker.Stop(wheel,localCacheKey)
+						log.Error("Empty value deteced(%d s) : %s,remove ticker run: error:%s",wheel,localCacheKey,err.Error())
+						tc.ticker.Stop(wheel,localCacheKey)
 					}else{
 						//发生redis连接故障，则继续保持旧有缓存
 						log.Error("Redis seems has gone,we do not clear cache if redis is down to keep gateway service's running")
