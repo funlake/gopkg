@@ -15,6 +15,11 @@ type FastHttpProxyJobResponse struct{
 	Error error
 	Dur time.Duration
 }
+var fastHttpProxyJobPool = sync.Pool{
+	New: func() interface{}{
+		return &fastHttpProxyJob{}
+	},
+}
 //func initFastHttpProxyResChan(chanSize int){
 //	fasthttpOnce.Do(func() {
 //		log.Success("Res fasthttp channel size:%d",chanSize)
@@ -26,12 +31,13 @@ type FastHttpProxyJobResponse struct{
 //}
 func NewFastHttpProxyJob(transport *fasthttp.Client,q *fasthttp.Request,rcsize int,id string) *fastHttpProxyJob {
 	//initFastHttpProxyResChan(rcsize)
-	//job := httpProxyJobPool.Get().(*httpProxyJob)
-	//job.q = q
-	//job.m = id
-	//job.t = transport
-	job := &fastHttpProxyJob{q:q,m:id,t:transport}
-	job.setResChan()
+	job := fastHttpProxyJobPool.Get().(*fastHttpProxyJob)
+	job.q = q
+	job.m = id
+	job.t = transport
+	job.r = make(chan FastHttpProxyJobResponse)
+	//job := &fastHttpProxyJob{q:q,m:id,t:transport}
+	//job.setResChan()
 	return job
 }
 

@@ -82,7 +82,7 @@ func makeRequestWithFastHttp(dispatcher *NonBlockingDispatcher) error{
 			if  r.Error == nil {
 				r.Response.Body()
 			}
-			job.Release()
+
 		case r := <- job.GetResChan():
 			if  r.Error != nil {
 				return r.Error
@@ -90,7 +90,6 @@ func makeRequestWithFastHttp(dispatcher *NonBlockingDispatcher) error{
 				//r.Response.Body()
 				log.Success("fasthttp 请求返回 http status : %d,请求时间 : %s",r.Response.StatusCode(),time.Since(now))
 			}
-			job.Release()
 		}
 	}else{
 		//queue is full
@@ -116,7 +115,6 @@ func makeRequestWithBlockingFastHttp(dispatcher *BlockingDispatcher) error{
 			if  r.Error == nil {
 				r.Response.Body()
 			}
-			job.Release()
 		case r := <- job.GetResChan():
 			if  r.Error != nil {
 				return r.Error
@@ -124,7 +122,6 @@ func makeRequestWithBlockingFastHttp(dispatcher *BlockingDispatcher) error{
 				//r.Response.Body()
 				log.Success("fasthttp 请求返回 http status : %d,请求时间 : %s",r.Response.StatusCode(),time.Since(now))
 			}
-			job.Release()
 		}
 	}else{
 		//queue is full
