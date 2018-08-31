@@ -8,24 +8,24 @@ import (
 	"sync"
 )
 
-var fastHttpResChan chan chan FastHttpProxyJobResponse
+//var fastHttpResChan chan chan FastHttpProxyJobResponse
 var fasthttpOnce = &sync.Once{}
 type FastHttpProxyJobResponse struct{
 	Response *fasthttp.Response
 	Error error
 	Dur time.Duration
 }
-func initFastHttpProxyResChan(chanSize int){
-	fasthttpOnce.Do(func() {
-		log.Success("Res fasthttp channel size:%d",chanSize)
-		fastHttpResChan = make(chan chan FastHttpProxyJobResponse,chanSize)
-		for i:=0;i<chanSize;i++{
-			fastHttpResChan <- make(chan FastHttpProxyJobResponse)
-		}
-	})
-}
+//func initFastHttpProxyResChan(chanSize int){
+//	fasthttpOnce.Do(func() {
+//		log.Success("Res fasthttp channel size:%d",chanSize)
+//		fastHttpResChan = make(chan chan FastHttpProxyJobResponse,chanSize)
+//		for i:=0;i<chanSize;i++{
+//			fastHttpResChan <- make(chan FastHttpProxyJobResponse)
+//		}
+//	})
+//}
 func NewFastHttpProxyJob(transport *fasthttp.Client,q *fasthttp.Request,rcsize int,id string) *fastHttpProxyJob {
-	initFastHttpProxyResChan(rcsize)
+	//initFastHttpProxyResChan(rcsize)
 	//job := httpProxyJobPool.Get().(*httpProxyJob)
 	//job.q = q
 	//job.m = id
@@ -70,14 +70,15 @@ func (job *fastHttpProxyJob) GetResChan() chan FastHttpProxyJobResponse {
 	return job.r
 }
 func (job *fastHttpProxyJob) Release()  {
-	job.putResChan()
+	<- job.r
+	//job.putResChan()
 	//httpProxyJobPool.Put(job)
 }
 
-func (job *fastHttpProxyJob) setResChan(){
-	job.r = <-fastHttpResChan
-}
-
-func (job *fastHttpProxyJob) putResChan(){
-	fastHttpResChan <- job.r
-}
+//func (job *fastHttpProxyJob) setResChan(){
+//	job.r = <-fastHttpResChan
+//}
+//
+//func (job *fastHttpProxyJob) putResChan(){
+//	fastHttpResChan <- job.r
+//}
