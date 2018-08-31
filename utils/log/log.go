@@ -5,7 +5,10 @@ import (
 	"runtime"
 	"path/filepath"
 )
-
+//var (
+//	logger, _ = zap.NewProduction()
+//	suger     = logger.Sugar()
+//)
 const (
 	color_red = uint8(iota + 91)
 	color_green
@@ -28,21 +31,29 @@ func Trace(format string, a ...interface{}) {
 func Info(format string, a ...interface{}) {
 	prefix := blue(info)
 	fmt.Println(formatLog(prefix), fmt.Sprintf(format, a...))
+	//suger.Infof(format, a...)
+	//logger.Sync()
 }
 
 func Success(format string, a ...interface{}) {
 	prefix := green(succ)
 	fmt.Println(formatLog(prefix), fmt.Sprintf(format, a...))
+	//suger.Infof(format, a...)
+	//logger.Sync()
 }
 
 func Warning(format string, a ...interface{}) {
-	prefix := magenta(warn)
+	prefix := yellow(warn)
 	fmt.Println(formatLog(prefix), fmt.Sprintf(format, a...))
+	//suger.Warnf( format, a...)
+	//logger.Sync()
 }
 
 func Error(format string, a ...interface{}) {
 	prefix := red(erro)
 	fmt.Println(formatLog(prefix), fmt.Sprintf(format, a...))
+	//suger.Errorf( format, a...)
+	//logger.Sync()
 }
 
 func red(s string) string {
