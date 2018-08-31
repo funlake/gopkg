@@ -3,6 +3,8 @@ package utils
 import (
 	"github.com/funlake/gopkg/utils/log"
 	"unsafe"
+	"bytes"
+	"encoding/json"
 )
 
 func RoutineRecover(msg string){
@@ -24,4 +26,14 @@ func StrToByte(s string) []byte{
 
 func ByteToStr(s []byte) string{
 	return *(*string)(unsafe.Pointer(&s))
+}
+
+//设置html过滤为false,否则默认的json marshal会过滤html字符,
+//导致返回数据不是raw string
+func JSONMarshal(t interface{}) ([]byte, error) {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(t)
+	return buffer.Bytes(), err
 }
