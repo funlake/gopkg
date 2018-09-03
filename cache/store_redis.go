@@ -22,7 +22,6 @@ func (sr *KvStoreRedis) Connect(dsn string,pwd string){
 			MaxActive: 150,
 			IdleTimeout: 100 * time.Second,
 			Dial: func() (redis.Conn, error) {
-
 				c, err := redis.Dial("tcp", dsn)
 				if err != nil {
 					log.Error(err.Error())
@@ -37,7 +36,7 @@ func (sr *KvStoreRedis) Connect(dsn string,pwd string){
 				}
 				// 选择db
 				c.Do("SELECT", 0)
-				log.Success("Set up redis connection")
+				log.Success("Init one redis connection")
 				return c, nil
 			},
 		}

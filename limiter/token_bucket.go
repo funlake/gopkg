@@ -143,6 +143,7 @@ func (this *tokenBucket) restartTimer() {
 func (this *tokenBucket) dayLimitRefreshCheck() {
 	//每10分钟执行一次，发现是凌晨0点则重启LoopSecond,清空令牌桶
 	this.ticker.Set(600,this.bucketKey+"_600", func() {
+		log.Info("day loop checking")
 		now := time.Now()
 		if now.Hour() == 0 {
 			log.Warning("Restart loop for day limit")
