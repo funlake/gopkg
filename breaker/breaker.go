@@ -85,10 +85,10 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	}
 	if run {
 		cxt, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(b.timeout))
-		ch := make(chan bool)
+		ch := make(chan struct{})
 		utils.WrapGo(func() {
 			fun()
-			ch <- true
+			ch <- struct{}{}
 		},"breaker run")
 		select {
 			case <-cxt.Done():
@@ -152,4 +152,7 @@ func (b *breaker) isOpen() bool{
 //打开熔断器
 func (b *breaker) open(){
 	b.status = 2
+}
+func (b *breaker) IsBroken() bool{
+	return b.status == 2
 }
