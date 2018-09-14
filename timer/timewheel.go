@@ -30,7 +30,7 @@ func (tw *timeWheel) GetSlot(timeout int) (chan *SlotItem,int){
 	findSlot := tw.GetSlotPos(timeout)
 	if tw.slot[findSlot] == nil{
 		//tw.slot[findSlot] = list.New()
-		tw.slot[findSlot] = make(chan *SlotItem,1000)
+		tw.slot[findSlot] = make(chan *SlotItem,5000)
 	}
 	return tw.slot[findSlot],findSlot
 }
