@@ -78,11 +78,3 @@ func (job *httpProxyJob) Release()  {
 	//job.putResChan()
 	//httpProxyJobPool.Put(job)
 }
-
-//func (job *httpProxyJob) setResChan(){
-// 	job.r = <-httpResChan
-//}
-//
-//func (job *httpProxyJob) putResChan(){
-//	httpResChan <- job.r
-//}

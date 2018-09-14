@@ -86,10 +86,11 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	if run {
 		cxt, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(b.timeout))
 		ch := make(chan struct{})
+		//mention: fun() can not be a blocking behaviour
 		utils.WrapGo(func() {
 			fun()
 			ch <- struct{}{}
-		},"breaker run")
+		},"breaker_run")
 		select {
 			case <-cxt.Done():
 				if b.isHalfopen(){
