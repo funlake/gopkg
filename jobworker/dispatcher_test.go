@@ -96,8 +96,6 @@ func makeRequestWithFastHttp(dispatcher *NonBlockingDispatcher) error{
 	}
 	return nil
 }
-
-
 func makeRequestWithBlockingFastHttp(dispatcher *BlockingDispatcher) error{
 	url := "http://www.baidu.com"
 	now := time.Now()
