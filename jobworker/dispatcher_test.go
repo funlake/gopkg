@@ -14,13 +14,13 @@ var transport = &http.Transport{
 var fasthttpClient = &fasthttp.Client{}
 func TestDispatcher_Put(t *testing.T) {
 	dispatcher := NewBlockingDispather(2,10)
-	for i:=0;i<10;i++{
+	for i:=0;i<11;i++{
 		dispatcher.Put(&simpleJob{})
 	}
 	if dispatcher.Put(&simpleJob{}){
-		t.Log("job queue is full")
-	}else{
 		t.Log("Ok")
+	}else{
+		t.Log("job queue is full")
 	}
 }
 

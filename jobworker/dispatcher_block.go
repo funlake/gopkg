@@ -3,6 +3,7 @@ package jobworker
 import (
 	"time"
 	"github.com/funlake/gopkg/utils"
+	"sync"
 )
 
 // blocking dispather
@@ -10,6 +11,7 @@ type BlockingDispatcher struct {
 	workerPool chan chan WorkerJob
 	jobQueue chan WorkerJob
 	//failQueue chan WorkerJob
+	metrics sync.Map
 }
 
 func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
@@ -68,4 +70,10 @@ func (d *BlockingDispatcher) Ready(){
 			}
 		}
 	}
+}
+
+func (d *BlockingDispatcher) Metrics() sync.Map {
+	d.metrics.Store("workers",len(d.workerPool))
+	d.metrics.Store("queue",len(d.jobQueue))
+	return d.metrics
 }

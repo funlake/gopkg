@@ -21,6 +21,7 @@ func (sr *KvStoreRedis) Connect(dsn string,pwd string){
 			MaxIdle: 50 ,
 			MaxActive: 150,
 			IdleTimeout: 100 * time.Second,
+			Wait:false,
 			Dial: func() (redis.Conn, error) {
 				c, err := redis.Dial("tcp", dsn)
 				if err != nil {

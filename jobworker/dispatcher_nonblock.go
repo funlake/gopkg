@@ -3,11 +3,13 @@ package jobworker
 import (
 "time"
 "github.com/funlake/gopkg/utils"
+	"sync"
 )
 
 type NonBlockingDispatcher struct {
 	workerPool chan chan WorkerJob
 	jobQueue chan WorkerJob
+	metrics sync.Map
 }
 func NewNonBlockingDispather(maxWorker int,queueSize int) *NonBlockingDispatcher {
 	dispatcher := &NonBlockingDispatcher{}
@@ -57,4 +59,10 @@ func (d *NonBlockingDispatcher) Ready(){
 			}
 		}
 	}
+}
+
+func (d *NonBlockingDispatcher) Metrics() sync.Map {
+	d.metrics.Store("workers",len(d.workerPool))
+	d.metrics.Store("queue",len(d.jobQueue))
+	return d.metrics
 }

@@ -15,7 +15,6 @@ func initTest(){
 		//log.Error("%s",redisStore.pool.Get().Do("get","abc"))
 		timercache.SetStore(redisStore)
 	})
-
 }
 func BenchmarkTimerCacheRedis_Get(b *testing.B) {
 	b.StopTimer()
