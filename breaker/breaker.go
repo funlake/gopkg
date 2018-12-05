@@ -9,6 +9,7 @@ import (
 	//"github.com/funlake/gopkg/utils"
 	"github.com/funlake/gopkg/utils/log"
 	"github.com/funlake/gopkg/utils"
+	"fmt"
 )
 var breakerTimer = timer.NewTimer()
 var breakerMap sync.Map
@@ -20,7 +21,7 @@ func NewBreaker(id string) *breaker {
 		return c.(*breaker)
 	}
 	//b := &breaker{id:id,rate:rate,status:0,/*errChans:make(chan breakerItem,100),*/timeout:timeout,window:window,pass:0,broken:0,min:min}
-	b := &breaker{id:id}
+	b := &breaker{id:id,pass:0,broken:0}
 	b.init()
 	breakerMap.Store(id,b)
 	return b
@@ -37,11 +38,12 @@ type breaker struct{
 	window int
 	//至少出现多少次超时才熔断
 	min int
+	//half open ticker
+	hot *timer.SlotItem
 }
 
 func (b *breaker) init(){
 	//b.metrics = NewMetrics().NewEntity(id,timeout, window)
-	utils.WrapGo(func() {b.tick()},"breaker-loopcheck")
 }
 func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	run := true
@@ -51,12 +53,14 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 	if b.isClose(){
 		if(b.broken >= b.min) {
 			if (b.broken * 100 / (b.pass + b.broken)) >= b.rate{
-				log.Error("%s 触发熔断,超时请求比率: %d%%",b.id,(b.broken * 100 / (b.pass + b.broken) ))
+				log.Error("%s熔断开启,超时请求比率: %d%%",b.id,(b.broken * 100 / (b.pass + b.broken) ))
 				b.open()
+				b.tick()
 			}
 		}else{
 			if !b.isClose() {
 				b.close()
+				b.untick()
 			}
 		}
 	}
@@ -68,6 +72,7 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 		if b.pass > 0 {
 			//if ( b.pass / (b.pass + len(b.errChans)) ) * 100 >= (100 - b.rate) {
 			if (b.pass * 100 / (b.pass + b.broken)) >= (100 - b.rate){
+				log.Info(fmt.Sprintf("%s熔断关闭",b.id))
 				b.close()
 				run = true
 			}
@@ -113,13 +118,18 @@ func (b *breaker) Run(fun func (),okfun func(),failfun func(run bool)){
 }
 
 func (b *breaker) tick(){
-	breakerTimer.SetInterval(b.window, func() {
+	b.hot = breakerTimer.SetInterval(b.window, func() {
 		b.pass = 0
 		b.broken = 0
 		if b.isOpen() {
+			log.Info(fmt.Sprintf("%s熔断半开",b.id))
 			b.halfopen()
 		}
 	})
+}
+
+func (b *breaker) untick(){
+	breakerTimer.StopInterval(b.hot)
 }
 func (b *breaker) SetWindow(window int)  {
 	b.window = window
