@@ -66,3 +66,11 @@ func (d *NonBlockingDispatcher) Metrics() sync.Map {
 	d.metrics.Store("queue",len(d.jobQueue))
 	return d.metrics
 }
+
+func (d *NonBlockingDispatcher) GetActiveWorkers() int {
+	return len(d.workerPool)
+}
+
+func (d *NonBlockingDispatcher) GetActiveQueue() int {
+	return len(d.jobQueue)
+}

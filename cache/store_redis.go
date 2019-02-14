@@ -69,3 +69,6 @@ func(sr *KvStoreRedis) HashSet(hkey string,key string,val interface{}) (interfac
 func (sr *KvStoreRedis) GetPool() interface{}{
 	return sr.pool
 }
+func (sr *KvStoreRedis) GetActiveCount() int{
+	return sr.pool.ActiveCount()
+}
