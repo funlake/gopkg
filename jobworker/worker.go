@@ -1,6 +1,7 @@
 package jobworker
 
 import (
+	//"github.com/funlake/gopkg/utils/log"
 	"github.com/funlake/gopkg/utils/log"
 )
 type Worker struct {

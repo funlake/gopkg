@@ -1,8 +1,8 @@
 package jobworker
 
 import (
-"time"
-"github.com/funlake/gopkg/utils"
+	"time"
+	"github.com/funlake/gopkg/utils"
 	"sync"
 )
 
@@ -59,12 +59,6 @@ func (d *NonBlockingDispatcher) Ready(){
 			}
 		}
 	}
-}
-
-func (d *NonBlockingDispatcher) Metrics() sync.Map {
-	d.metrics.Store("workers",len(d.workerPool))
-	d.metrics.Store("queue",len(d.jobQueue))
-	return d.metrics
 }
 
 func (d *NonBlockingDispatcher) GetActiveWorkers() int {

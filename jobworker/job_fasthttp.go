@@ -29,7 +29,7 @@ var fastHttpProxyJobPool = sync.Pool{
 //		}
 //	})
 //}
-func NewFastHttpProxyJob(transport *fasthttp.Client,q *fasthttp.Request,rcsize int,id string) *fastHttpProxyJob {
+func NewFastHttpProxyJob(transport *fasthttp.Client,q *fasthttp.Request,id string) *fastHttpProxyJob {
 	//initFastHttpProxyResChan(rcsize)
 	job := fastHttpProxyJobPool.Get().(*fastHttpProxyJob)
 	job.q = q
@@ -68,7 +68,7 @@ func(job *fastHttpProxyJob) Do() {
 	//TODO : 更多测试
 	//go func(res *http.Response,err error) {
 	job.r <- FastHttpProxyJobResponse{resp, err, 0}
-	time.Sleep(time.Second * 3)
+	//time.Sleep(time.Second * 3)
 	//log.Info("%s -> fasthttp请求时间消耗 : %s",job.Id(),time.Since(now))
 	//}()
 }
