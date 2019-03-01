@@ -7,4 +7,5 @@ type Dispatcher interface {
 	Put(job WorkerJob) bool
 	Run(maxWork int)
 	Ready()
+	Stop()
 }

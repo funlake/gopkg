@@ -3,13 +3,14 @@ package jobworker
 import (
 	"time"
 	"github.com/funlake/gopkg/utils"
-	"sync"
+	"github.com/funlake/gopkg/utils/log"
 )
 
 type NonBlockingDispatcher struct {
 	workerPool chan chan WorkerJob
 	jobQueue chan WorkerJob
-	metrics sync.Map
+	stop chan struct{}
+	isStop bool
 }
 func NewNonBlockingDispather(maxWorker int,queueSize int) *NonBlockingDispatcher {
 	dispatcher := &NonBlockingDispatcher{}
@@ -17,13 +18,23 @@ func NewNonBlockingDispather(maxWorker int,queueSize int) *NonBlockingDispatcher
 	dispatcher.jobQueue = make(chan WorkerJob,queueSize)
 	//流水线工人数量
 	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
+	dispatcher.stop = make(chan struct{})
+	dispatcher.isStop = false
 	dispatcher.Run(maxWorker)
 	//稍微等下worker启动
 	time.Sleep(time.Nanosecond * 10)
 	return dispatcher
 }
 func (d *NonBlockingDispatcher) Put(job WorkerJob) bool{
+	if d.isStop {
+		return false
+	}
 	select {
+	case <- d.stop:
+		close(d.jobQueue)
+		close(d.workerPool)
+		d.isStop = true
+		return false
 	case d.jobQueue <- job:
 		return true
 	default :
@@ -60,11 +71,17 @@ func (d *NonBlockingDispatcher) Ready(){
 		}
 	}
 }
-
+func (d *NonBlockingDispatcher) Stop(){
+	log.Warning("what are you doing ?")
+	d.stop <- struct{}{}
+}
 func (d *NonBlockingDispatcher) GetActiveWorkers() int {
 	return len(d.workerPool)
 }
 
 func (d *NonBlockingDispatcher) GetActiveQueue() int {
 	return len(d.jobQueue)
+}
+func (d *NonBlockingDispatcher) GetStopStatus() bool{
+	return d.isStop
 }

@@ -3,15 +3,13 @@ package jobworker
 import (
 	"time"
 	"github.com/funlake/gopkg/utils"
-	"sync"
 )
 
 // blocking dispather
 type BlockingDispatcher struct {
 	workerPool chan chan WorkerJob
 	jobQueue chan WorkerJob
-	//failQueue chan WorkerJob
-	metrics sync.Map
+	stop chan struct{}
 }
 
 func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
@@ -22,6 +20,7 @@ func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
 	dispatcher.workerPool = make(chan chan WorkerJob,maxWorker)
 	//失败队列
 	//dispatcher.failQueue = make(chan WorkerJob,queueSize * 2)
+	dispatcher.stop = make(chan struct{})
 	dispatcher.Run(maxWorker)
 	//稍微等下worker启动
 	time.Sleep(time.Nanosecond * 10)
@@ -30,6 +29,10 @@ func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
 
 func (d *BlockingDispatcher) Put(job WorkerJob) bool{
 	select {
+		case <- d.stop:
+			close(d.jobQueue)
+			//close(d.workerPool)
+			return false
 		case d.jobQueue <- job:
 			return true
 		default :
@@ -71,13 +74,9 @@ func (d *BlockingDispatcher) Ready(){
 		}
 	}
 }
-
-func (d *BlockingDispatcher) Metrics() sync.Map {
-	d.metrics.Store("workers",len(d.workerPool))
-	d.metrics.Store("queue",len(d.jobQueue))
-	return d.metrics
+func (d *BlockingDispatcher) Stop(){
+	d.stop <- struct{}{}
 }
-
 func (d *BlockingDispatcher) GetActiveWorkers() int {
 	return len(d.workerPool)
 }

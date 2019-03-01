@@ -75,6 +75,7 @@ func makeRequest(dispatcher *NonBlockingDispatcher) error{
 			}
 		}
 	}else{
+		log.Warning("disptacher is closed or full of tasks")
 		//queue is full
 	}
 	return nil
@@ -197,4 +198,17 @@ func BenchmarkDispatcher_WithTransport(b *testing.B) {
 			makeRequest2(dispatcher)
 		}
 	})
+}
+
+func TestStopDispatcher(t *testing.T){
+	dispatcher := NewNonBlockingDispather(10,100)
+	go func() {
+		time.Sleep(time.Second * 1)
+		log.Info("关闭dispatcher")
+		dispatcher.Stop()
+	}()
+	for i:=0;i<100;i++ {
+		makeRequest(dispatcher)
+		time.Sleep(time.Millisecond * 200)
+	}
 }
