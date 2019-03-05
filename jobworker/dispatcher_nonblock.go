@@ -32,7 +32,7 @@ func (d *NonBlockingDispatcher) Put(job WorkerJob) bool{
 	select {
 	case <- d.stop:
 		close(d.jobQueue)
-		close(d.workerPool)
+		//close(d.workerPool)
 		d.isStop = true
 		return false
 	case d.jobQueue <- job:
@@ -58,21 +58,27 @@ func (d *NonBlockingDispatcher) Run(maxWorker int){
 //如不做超时处理,则后续请求会在<-d.workerPool处等待很长时间，而真正进入转发阶段的消耗时间却并不多
 //所以后端服务无压力，而请求却堵在网关处!
 func (d *NonBlockingDispatcher) Ready(){
+	stop:
 	for{
 		select{
-		case job := <-d.jobQueue:
-			select {
-			case jobChan := <-d.workerPool :
-				jobChan <- job
-			default:
-				job.(WorkerNonBlockingJob).OnWorkerFull(d)
-				//job.OnWorkerFull(d)
-			}
+			case job,open := <-d.jobQueue:
+				if !open{
+					log.Error("Closing workerPool")
+					close(d.workerPool)
+					break stop
+				}
+				select {
+					case jobChan := <-d.workerPool :
+						jobChan <- job
+					default:
+						job.(WorkerNonBlockingJob).OnWorkerFull(d)
+					//job.OnWorkerFull(d)
+				}
 		}
 	}
+	log.Info("Worker pool has been shutted down")
 }
 func (d *NonBlockingDispatcher) Stop(){
-	log.Warning("what are you doing ?")
 	d.stop <- struct{}{}
 }
 func (d *NonBlockingDispatcher) GetActiveWorkers() int {
@@ -82,6 +88,6 @@ func (d *NonBlockingDispatcher) GetActiveWorkers() int {
 func (d *NonBlockingDispatcher) GetActiveQueue() int {
 	return len(d.jobQueue)
 }
-func (d *NonBlockingDispatcher) GetStopStatus() bool{
+func (d *NonBlockingDispatcher) StopStatus() bool{
 	return d.isStop
 }

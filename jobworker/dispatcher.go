@@ -8,4 +8,5 @@ type Dispatcher interface {
 	Run(maxWork int)
 	Ready()
 	Stop()
+	StopStatus() bool
 }

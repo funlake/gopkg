@@ -3,6 +3,7 @@ package jobworker
 import (
 	"time"
 	"github.com/funlake/gopkg/utils"
+	"github.com/funlake/gopkg/utils/log"
 )
 
 // blocking dispather
@@ -10,6 +11,7 @@ type BlockingDispatcher struct {
 	workerPool chan chan WorkerJob
 	jobQueue chan WorkerJob
 	stop chan struct{}
+	isStop bool
 }
 
 func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
@@ -21,6 +23,7 @@ func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
 	//失败队列
 	//dispatcher.failQueue = make(chan WorkerJob,queueSize * 2)
 	dispatcher.stop = make(chan struct{})
+	dispatcher.isStop = false
 	dispatcher.Run(maxWorker)
 	//稍微等下worker启动
 	time.Sleep(time.Nanosecond * 10)
@@ -28,10 +31,13 @@ func NewBlockingDispather(maxWorker int,queueSize int) *BlockingDispatcher {
 }
 
 func (d *BlockingDispatcher) Put(job WorkerJob) bool{
+	if d.isStop {
+		return false
+	}
 	select {
 		case <- d.stop:
 			close(d.jobQueue)
-			//close(d.workerPool)
+			close(d.workerPool)
 			return false
 		case d.jobQueue <- job:
 			return true
@@ -64,15 +70,25 @@ func (d *BlockingDispatcher) Run(maxWorker int){
 //}
 //后端持续处理需要堵塞并后续执行，故无需超时处理
 func (d *BlockingDispatcher) Ready(){
+stop:
 	for{
 		select{
-		case job := <-d.jobQueue:
+		case job,open := <-d.jobQueue:
+			if !open{
+				log.Error("Closing workerPool")
+				close(d.workerPool)
+				break stop
+			}
 			select {
-				case jobChan := <-d.workerPool :
-					jobChan <- job
+			case jobChan := <-d.workerPool :
+				jobChan <- job
+			default:
+				job.(WorkerBlockingJob).OnWorkerFull(d)
+				//job.OnWorkerFull(d)
 			}
 		}
 	}
+	log.Info("Worker pool has been shutted down")
 }
 func (d *BlockingDispatcher) Stop(){
 	d.stop <- struct{}{}
@@ -83,4 +99,8 @@ func (d *BlockingDispatcher) GetActiveWorkers() int {
 
 func (d *BlockingDispatcher) GetActiveQueue() int {
 	return len(d.jobQueue)
+}
+
+func (d *BlockingDispatcher) StopStatus() bool{
+	return d.isStop
 }
