@@ -39,11 +39,11 @@ func (tc *TimerCacheRedis) Get(hk string,k string,wheel int) (string,error){
 	if _,ok := tc.local[localCacheKey];ok{
 		return tc.local[localCacheKey],nil
 	}else{
-		log.Info("Access redis for setting : %s_%s",hk,k)
+		//log.Info("Access redis for setting : %s_%s",hk,k)
 		v, err := tc.store.HashGet(hk, k)
 		if err == nil || strings.Contains(err.Error(),"nil returned") {
 			//tc.local[localCacheKey] = v.(string)
-			log.Info("set cache value even cache is empty :%s",localCacheKey)
+			//log.Info("set cache value even cache is empty :%s",localCacheKey)
 			tc.local[localCacheKey] = v.(string)
 			tc.ticker.Set(wheel,localCacheKey, func() {
 				tc.mu.Lock()
