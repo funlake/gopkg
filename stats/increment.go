@@ -4,7 +4,6 @@ import (
 	"go.uber.org/atomic"
 	"sync"
 	"github.com/funlake/gopkg/timer"
-	"github.com/funlake/gopkg/utils/log"
 )
 type Report struct {
 	qps int64
@@ -57,7 +56,7 @@ func (s *Stats) rolling(){
 	})
 }
 func (s *Stats) update(d bool){
-	log.Info("recent:%d,prev:%d",s.recent.ask.Load(),s.prev.ask.Load())
+	//log.Info("recent:%d,prev:%d",s.recent.ask.Load(),s.prev.ask.Load())
 	//s.report.ask.Store(s.recent.ask.Load() - s.prev.ask.Load())
 	s.report.qps = s.recent.ask.Load() - s.prev.ask.Load()
 	if d {
