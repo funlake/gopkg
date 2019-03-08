@@ -42,7 +42,7 @@ func (tc *TimerCacheRedis) Get(hk string,k string,wheel int) (string,error){
 	}else{
 		//log.Info("Access redis for setting : %s_%s",hk,k)
 		v, err := tc.store.HashGet(hk, k)
-		if err == nil || strings.Contains(err.Error(),"nil returned") {
+		if err == nil /*|| strings.Contains(err.Error(),"nil returned")*/ {
 			//tc.local[localCacheKey] = v.(string)
 			//log.Info("set cache value even cache is empty :%s",localCacheKey)
 			tc.local[localCacheKey] = v.(string)
@@ -84,8 +84,11 @@ func (tc *TimerCacheRedis) Get(hk string,k string,wheel int) (string,error){
 			})
 			return tc.local[localCacheKey],nil
 		}else{
-			log.Error(err.Error())
-			return "",err
+			log.Error("%s : %s",localCacheKey, err.Error())
+			//防止redis被刷
+			//如要情况缓存，可调用/api-cleancache接口
+			tc.local[localCacheKey] = ""
+			//return "",err
 		}
 	}
 	//log.Warning("waht the fuck?")
