@@ -82,8 +82,6 @@ func (s *Stats) rolling(){
 	})
 }
 func (s *Stats) update(d bool){
-	//log.Info("recent:%d,prev:%d",s.recent.request.Load(),s.prev.request.Load())
-	//s.report.request.Store(s.recent.request.Load() - s.prev.request.Load())
 	s.report.qps = s.recent.request.Load() - s.prev.request.Load()
 	if d {
 		if s.report.qps < 0 {

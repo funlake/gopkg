@@ -21,3 +21,24 @@ NewBreaker("request google",2,30,10,3)
 > 以上规则是30秒内，超时时间超过2秒，次数超过3次,且错误比率超过10%，则启动熔断机制，等待下个30秒，自动启动半开模式，50%几率穿透，
 > 30秒内假如没有超时或pass几率超过90%，则视为服务恢复
 
+6. stats.increment 每秒统计次数器
+##### demo
+```
+increment := &stats.Increment{}
+increment.Setup("request_baidu") //添加统计
+go func() {
+    tm := timer.NewTimer()
+    tm.Ready()
+    tm.SetInterval(1, func() {
+        //每秒钟输出当前qps
+        log.Info("qps : %d",increment.GetStat("request_baidu").GetReport().GetQps())
+    })
+}()
+
+for  {
+    increment.IncrRequest("request_baidu")
+    time.Sleep(time.Millisecond * 300) //当于1秒请求3,4次
+}
+```
+
+
