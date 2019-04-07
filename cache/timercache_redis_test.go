@@ -26,7 +26,7 @@ func BenchmarkTimerCacheRedis_Get(b *testing.B) {
 			//hashget,如果是普通get，将第一个参数置空即可
 			_,err := timercache.Get("gateway:proxy","access_token",3)
 			if err != nil{
-				b.Error(err.Error())
+				b.Log(err.Error())
 				break
 			}
 		}
@@ -37,7 +37,7 @@ func TestTimerCacheRedis_Get(t *testing.T) {
 	initTest()
 	_,err := timercache.Get("gateway:proxy","access_token",3)
 	if err != nil{
-		t.Error(err.Error())
+		t.Log(err.Error())
 	}
 }
 
@@ -45,7 +45,7 @@ func TestNilReturnFromRedis(t *testing.T)  {
 	initTest()
 	v,err := timercache.Get("gateway:proxy","access_token",3)
 	if err != nil{
-		t.Error(err.Error())
+		t.Log(err.Error())
 	}else{
 		t.Log(v)
 	}

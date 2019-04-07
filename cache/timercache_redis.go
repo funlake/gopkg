@@ -84,7 +84,7 @@ func (tc *TimerCacheRedis) Get(hk string,k string,wheel int) (string,error){
 			})
 			return tc.local[localCacheKey],nil
 		}else{
-			log.Error("%s : %s",localCacheKey, err.Error())
+			log.Warning("%s : %s",localCacheKey, err.Error())
 			//防止redis被刷
 			//如要情况缓存，可调用/api-cleancache接口
 			tc.local[localCacheKey] = ""
