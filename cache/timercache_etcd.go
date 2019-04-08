@@ -62,7 +62,7 @@ func (tc *TimerCacheEtcd) Watch(key string){
       tp := fmt.Sprintf("%v",e.Type)
       switch tp {
         case "DELETE" :
-          tc.local.Store(key,"")
+          tc.local.Delete(key)
           cancel()
         break
         case "PUT" :
