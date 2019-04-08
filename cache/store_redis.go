@@ -43,6 +43,10 @@ func (sr *KvStoreRedis) Connect(dsn string,pwd string){
 		}
 	})
 }
+
+func (sr *KvStoreRedis) ConnectWithTls(dsn,tls interface{}){
+
+}
 func (sr *KvStoreRedis) Set(key string,val interface{}){
 	c := sr.pool.Get()
 	defer c.Close()

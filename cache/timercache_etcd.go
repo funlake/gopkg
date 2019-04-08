@@ -2,10 +2,10 @@ package cache
 
 import (
   "context"
+  "errors"
   "fmt"
   "github.com/funlake/gopkg/utils"
   "go.etcd.io/etcd/clientv3"
-  "qiniupkg.com/x/errors.v7"
   "sync"
 )
 
