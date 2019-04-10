@@ -16,26 +16,35 @@ type TimerCacheEtcd struct {
   store *KvStoreEtcd
   local sync.Map
 }
+func (tc *TimerCacheEtcd) GetStore() *KvStoreEtcd{
+  return tc.store
+}
 func (tc *TimerCacheEtcd) Get(hk string,k string,wheel int) (string,error){
   var rv string
-  val,ok := tc.local.Load(k)
+  rk := k
+  if hk != ""{
+    rk = hk + "/" + k
+  }
+
+  val,ok := tc.local.Load(rk)
   if !ok {
-    resp, err := tc.store.Get(k)
+    resp, err := tc.store.Get(rk)
     if err == nil {
       for _, e := range resp.(*clientv3.GetResponse).Kvs {
         rv = string(e.Value)
       }
     } else {
+      tc.local.Store(rk, "")
       return "",err
     }
     if rv != "" {
       utils.WrapGo(func() {
-        tc.Watch(k)
-      },fmt.Sprintf("watch-key-%s",k))
-      tc.local.Store(k, rv)
+        tc.Watch(rk)
+      },fmt.Sprintf("watch-key-%s",rk))
+      tc.local.Store(rk, rv)
       return rv,nil
     }else{
-      tc.local.Store(k, "")
+      tc.local.Store(rk, "")
       return "",errors.New("Value Not set")
     }
   }

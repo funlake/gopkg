@@ -44,8 +44,8 @@ func (sr *KvStoreRedis) Connect(dsn string,pwd string){
 	})
 }
 
-func (sr *KvStoreRedis) ConnectWithTls(dsn,tls interface{}){
-
+func (sr *KvStoreRedis) ConnectWithTls(dsn,tls interface{})(error){
+	return nil
 }
 func (sr *KvStoreRedis) Set(key string,val interface{}){
 	c := sr.pool.Get()
