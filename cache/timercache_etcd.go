@@ -5,7 +5,7 @@ import (
   "errors"
   "fmt"
   "github.com/funlake/gopkg/utils"
-  "go.etcd.io/etcd/clientv3"
+  cv3 "go.etcd.io/etcd/clientv3"
   "sync"
 )
 
@@ -30,7 +30,7 @@ func (tc *TimerCacheEtcd) Get(hk string,k string,wheel int) (string,error){
   if !ok {
     resp, err := tc.store.Get(rk)
     if err == nil {
-      for _, e := range resp.(*clientv3.GetResponse).Kvs {
+      for _, e := range resp.(*cv3.GetResponse).Kvs {
         rv = string(e.Value)
       }
     } else {

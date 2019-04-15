@@ -4,8 +4,8 @@ import (
   "context"
   "crypto/tls"
   "github.com/funlake/gopkg/utils/log"
-  "go.etcd.io/etcd/clientv3"
-  "go.etcd.io/etcd/clientv3/concurrency"
+  cv3  "go.etcd.io/etcd/clientv3"
+  con "go.etcd.io/etcd/clientv3/concurrency"
   "strings"
   "time"
 )
@@ -15,12 +15,12 @@ func NewKvStoreEtcd() *KvStoreEtcd {
 }
 
 type KvStoreEtcd struct {
-   conn *clientv3.Client
+   conn *cv3.Client
 }
 
 func (es *KvStoreEtcd) Connect(dsn,pwd string){
   var err error
-  es.conn,err = clientv3.New(clientv3.Config{
+  es.conn,err = cv3.New(cv3.Config{
     Endpoints:strings.Split(dsn,","),
     DialTimeout: time.Second * 3,
   })
@@ -30,7 +30,7 @@ func (es *KvStoreEtcd) Connect(dsn,pwd string){
 }
 func (es *KvStoreEtcd) ConnectWithTls(dsn ,tlsc interface{})(error){
   var err error
-  es.conn,err = clientv3.New(clientv3.Config{
+  es.conn,err = cv3.New(cv3.Config{
     Endpoints:strings.Split(dsn.(string),","),
     DialTimeout: time.Second * 3,
     TLS: tlsc.(*tls.Config),
@@ -44,7 +44,7 @@ func (es *KvStoreEtcd) Get(key string) (interface{},error){
   return r,err
 }
 func (es *KvStoreEtcd) Set(key string , val interface{}){
-  _,err := concurrency.NewSTM(es.conn, func(stm concurrency.STM) error {
+  _,err := con.NewSTM(es.conn, func(stm con.STM) error {
     stm.Put(key,val.(string))
     return nil
   })
@@ -53,7 +53,7 @@ func (es *KvStoreEtcd) Set(key string , val interface{}){
   }
 }
 func (es *KvStoreEtcd) HashSet(hk,key string , val interface{})(string,error){
-  _,err := concurrency.NewSTM(es.conn, func(stm concurrency.STM) error {
+  _,err := con.NewSTM(es.conn, func(stm con.STM) error {
     stm.Put(hk+"/"+key,val.(string))
     return nil
   })
@@ -71,7 +71,7 @@ func (es *KvStoreEtcd) Delete(key string) {
     log.Error(err.Error())
   }
 }
-func (es *KvStoreEtcd) Watch(ctx context.Context,key string) (clientv3.WatchChan) {
+func (es *KvStoreEtcd) Watch(ctx context.Context,key string) (cv3.WatchChan) {
   return es.conn.Watch(ctx,key)
 }
 func (es *KvStoreEtcd) GetActiveCount() int{
