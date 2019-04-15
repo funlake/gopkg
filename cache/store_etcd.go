@@ -76,5 +76,7 @@ func (es *KvStoreEtcd) Watch(ctx context.Context,key string) (cv3.WatchChan) {
   return es.conn.Watch(ctx,key)
 }
 func (es *KvStoreEtcd) GetActiveCount() int{
-  return int(es.conn.ActiveConnection().ChannelzMetric().CallsStarted)
+  return 1
+  //new version will have it?
+  //return int(es.conn.ActiveConnection().ChannelzMetric().CallsStarted)
 }
