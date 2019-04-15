@@ -141,7 +141,7 @@ func (b *breaker) SetRate(rate int){
 func (b *breaker) SetMin(min int){
 	b.min = min
 }
-func (b *breaker) SetTimemout(timeout int){
+func (b *breaker) SetTimeout(timeout int){
 	b.timeout = timeout
 }
 func (b *breaker) isHalfopen() bool{

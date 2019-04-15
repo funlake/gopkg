@@ -31,7 +31,7 @@ import (
 func BenchmarkBreaker_Run(b *testing.B) {
 	b.SetParallelism(3)
 	bre := NewBreaker("simulate break request")
-	bre.SetTimemout(2)
+	bre.SetTimeout(2)
 	bre.SetRate(50)
 	bre.SetWindow(3)
 	bre.SetMin(3)
