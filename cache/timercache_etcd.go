@@ -5,7 +5,7 @@ import (
   "errors"
   "fmt"
   "github.com/funlake/gopkg/utils"
-  cv3 "go.etcd.io/etcd/clientv3"
+  cv3 "github.com/coreos/etcd/clientv3"
   "sync"
 )
 

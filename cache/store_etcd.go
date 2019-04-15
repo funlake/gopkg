@@ -4,8 +4,9 @@ import (
   "context"
   "crypto/tls"
   "github.com/funlake/gopkg/utils/log"
-  cv3  "go.etcd.io/etcd/clientv3"
-  con "go.etcd.io/etcd/clientv3/concurrency"
+ // cv3  "go.etcd.io/etcd/clientv3"
+  cv3 "github.com/coreos/etcd/clientv3"
+  con "github.com/coreos/etcd/clientv3/concurrency"
   "strings"
   "time"
 )
