@@ -4,9 +4,8 @@ import (
   "context"
   "crypto/tls"
   "github.com/funlake/gopkg/utils/log"
- // cv3  "go.etcd.io/etcd/clientv3"
+  // cv3  "go.etcd.io/etcd/clientv3"
   cv3 "github.com/coreos/etcd/clientv3"
-  con "github.com/coreos/etcd/clientv3/concurrency"
   "strings"
   "time"
 )
@@ -44,24 +43,27 @@ func (es *KvStoreEtcd) Get(key string) (interface{},error){
   r,err := es.conn.Get(ctx,key)
   return r,err
 }
-func (es *KvStoreEtcd) Set(key string , val interface{}){
-  _,err := con.NewSTM(es.conn, func(stm con.STM) error {
-    stm.Put(key,val.(string))
-    return nil
-  })
-  if err != nil{
-    log.Error(err.Error())
-  }
+func (es *KvStoreEtcd) Set(key string , val interface{})(interface{},error){
+  //_,err := con.NewSTM(es.conn, func(stm con.STM) error {
+  //  stm.Put(key,val.(string))
+  //  return nil
+  //})
+  //if err != nil{
+  //  log.Error(err.Error())
+  //}
+  ctx,_ := context.WithTimeout(context.Background(),time.Millisecond * 500)
+  return es.conn.Put(ctx,key,val.(string))
 }
-func (es *KvStoreEtcd) HashSet(hk,key string , val interface{})(string,error){
-  _,err := con.NewSTM(es.conn, func(stm con.STM) error {
-    stm.Put(hk+"/"+key,val.(string))
-    return nil
-  })
-  if err != nil{
-    log.Error(err.Error())
-  }
-  return "",err
+func (es *KvStoreEtcd) HashSet(hk,key string , val interface{})(interface{},error){
+  //_,err := con.NewSTM(es.conn, func(stm con.STM) error {
+  //  stm.Put(hk+"/"+key,val.(string))
+  //  return nil
+  //})
+  //if err != nil{
+  //  log.Error(err.Error())
+  //}
+  ctx,_ := context.WithTimeout(context.Background(),time.Millisecond * 500)
+  return es.conn.Put(ctx,hk+"/"+key,val.(string))
 }
 func (es *KvStoreEtcd) 	GetPool() interface{}{
   return es.conn
