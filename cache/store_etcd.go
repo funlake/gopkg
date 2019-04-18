@@ -4,6 +4,8 @@ import (
   "context"
   "crypto/tls"
   "github.com/funlake/gopkg/utils/log"
+  "google.golang.org/grpc"
+
   // cv3  "go.etcd.io/etcd/clientv3"
   cv3 "github.com/coreos/etcd/clientv3"
   "strings"
@@ -23,6 +25,7 @@ func (es *KvStoreEtcd) Connect(dsn,pwd string){
   es.conn,err = cv3.New(cv3.Config{
     Endpoints:strings.Split(dsn,","),
     DialTimeout: time.Second * 3,
+    DialOptions: []grpc.DialOption{grpc.WithBlock()},
   })
   if err != nil {
     panic("No available etcd server:"+err.Error())
@@ -34,6 +37,7 @@ func (es *KvStoreEtcd) ConnectWithTls(dsn ,tlsc interface{})(error){
     Endpoints:strings.Split(dsn.(string),","),
     DialTimeout: time.Second * 3,
     TLS: tlsc.(*tls.Config),
+    DialOptions: []grpc.DialOption{grpc.WithBlock()},
   })
   return err
 }
