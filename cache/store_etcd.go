@@ -3,6 +3,10 @@ package cache
 import (
   "context"
   "crypto/tls"
+<<<<<<< HEAD
+=======
+  "github.com/funlake/gopkg/utils/log"
+>>>>>>> e20adade7cee98fedceea1fcdc984a23fa793e4b
   "google.golang.org/grpc"
 
   // cv3  "go.etcd.io/etcd/clientv3"
