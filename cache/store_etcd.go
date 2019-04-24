@@ -3,7 +3,6 @@ package cache
 import (
   "context"
   "crypto/tls"
-  "github.com/funlake/gopkg/utils/log"
   "google.golang.org/grpc"
 
   // cv3  "go.etcd.io/etcd/clientv3"
@@ -72,11 +71,9 @@ func (es *KvStoreEtcd) HashSet(hk,key string , val interface{})(interface{},erro
 func (es *KvStoreEtcd) 	GetPool() interface{}{
   return es.conn
 }
-func (es *KvStoreEtcd) Delete(key string) {
-  _,err := es.conn.Delete(context.TODO(),key)
-  if err != nil {
-    log.Error(err.Error())
-  }
+func (es *KvStoreEtcd) Delete(key string) (interface{},error){
+  ctx,_ := context.WithTimeout(context.Background(),time.Millisecond * 500)
+  return es.conn.Delete(ctx,key)
 }
 func (es *KvStoreEtcd) Watch(ctx context.Context,key string) (cv3.WatchChan) {
   return es.conn.Watch(ctx,key)
