@@ -74,8 +74,8 @@ func (es *KvStoreEtcd) Delete(key string) (interface{},error){
   ctx,_ := context.WithTimeout(context.Background(),time.Millisecond * 500)
   return es.conn.Delete(ctx,key)
 }
-func (es *KvStoreEtcd) Watch(ctx context.Context,key string) (cv3.WatchChan) {
-  return es.conn.Watch(ctx,key)
+func (es *KvStoreEtcd) Watch(ctx context.Context,key string,opts ... cv3.OpOption) (cv3.WatchChan) {
+  return es.conn.Watch(ctx,key,opts...)
 }
 func (es *KvStoreEtcd) GetActiveCount() int{
   return 1
