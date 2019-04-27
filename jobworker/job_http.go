@@ -1,34 +1,38 @@
 package jobworker
 
 import (
-	"time"
-	"net/http"
 	"errors"
 	"github.com/funlake/gopkg/utils/log"
+	"net/http"
 	"sync"
+	"time"
 )
-type HttpProxyJobResponse struct{
+
+type HttpProxyJobResponse struct {
 	Response *http.Response
-	Error error
-	Dur time.Duration
+	Error    error
+	Dur      time.Duration
 }
+
 var once = &sync.Once{}
+
 //var httpResChan chan chan HttpProxyJobResponse
 var httpProxyJobPool = sync.Pool{
-	New: func() interface{}{
+	New: func() interface{} {
 		return &httpProxyJob{}
 	},
 }
-func initHttpProxyResChan(chanSize int){
+
+func initHttpProxyResChan(chanSize int) {
 	once.Do(func() {
-		log.Success("Res channel size:%d",chanSize)
+		log.Success("Res channel size:%d", chanSize)
 		//httpResChan = make(chan chan HttpProxyJobResponse,chanSize)
 		//for i:=0;i<chanSize;i++{
 		//	httpResChan <- make(chan HttpProxyJobResponse)
 		//}
 	})
 }
-func NewHttpProxyJob(transport *http.Transport,q *http.Request,id string) *httpProxyJob {
+func NewHttpProxyJob(transport *http.Transport, q *http.Request, id string) *httpProxyJob {
 	//if httpResChan == nil{
 	//	initHttpProxyResChan(rcsize)
 	//}
@@ -48,17 +52,18 @@ type httpProxyJob struct {
 	m string
 	t *http.Transport
 }
-func (job *httpProxyJob) Id() string{
+
+func (job *httpProxyJob) Id() string {
 	return job.m
 }
-func (job *httpProxyJob) OnWorkerFull(dispatcher *NonBlockingDispatcher){
-	job.r <- HttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
+func (job *httpProxyJob) OnWorkerFull(dispatcher *NonBlockingDispatcher) {
+	job.r <- HttpProxyJobResponse{nil, errors.New("worker繁忙"), 0}
 }
-func(job *httpProxyJob) Do() {
+func (job *httpProxyJob) Do() {
 	//now := time.Now()
 	//log.Info("%s,%s",job.t.RoundTrip,job.q.Method)
 
-	res,_ := job.t.RoundTrip(job.q)
+	res, _ := job.t.RoundTrip(job.q)
 	//1.加协程可快速释放worker,worker不论转发是否成功就回列
 	// 优点:处理速度快,保证worker快速回,保证可用worker数
 	// 缺点:假如后端高并发处理能力不足,则会造成雪崩效应，后端已经处理不过来了，这边还是持续由worker发送请求
@@ -75,7 +80,7 @@ func(job *httpProxyJob) Do() {
 func (job *httpProxyJob) GetResChan() chan HttpProxyJobResponse {
 	return job.r
 }
-func (job *httpProxyJob) Release()  {
+func (job *httpProxyJob) Release() {
 	<-job.r
 	//job.putResChan()
 	//httpProxyJobPool.Put(job)

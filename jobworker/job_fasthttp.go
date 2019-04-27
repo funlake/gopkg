@@ -1,25 +1,28 @@
 package jobworker
 
 import (
-	"time"
-	"github.com/valyala/fasthttp"
 	"errors"
 	"github.com/funlake/gopkg/utils/log"
+	"github.com/valyala/fasthttp"
 	"sync"
+	"time"
 )
 
 //var fastHttpResChan chan chan FastHttpProxyJobResponse
 var fasthttpOnce = &sync.Once{}
-type FastHttpProxyJobResponse struct{
+
+type FastHttpProxyJobResponse struct {
 	Response *fasthttp.Response
-	Error error
-	Dur time.Duration
+	Error    error
+	Dur      time.Duration
 }
+
 var fastHttpProxyJobPool = sync.Pool{
-	New: func() interface{}{
+	New: func() interface{} {
 		return &fastHttpProxyJob{}
 	},
 }
+
 //func initFastHttpProxyResChan(chanSize int){
 //	fasthttpOnce.Do(func() {
 //		log.Success("Res fasthttp channel size:%d",chanSize)
@@ -29,7 +32,7 @@ var fastHttpProxyJobPool = sync.Pool{
 //		}
 //	})
 //}
-func NewFastHttpProxyJob(transport *fasthttp.Client,q *fasthttp.Request,id string) *fastHttpProxyJob {
+func NewFastHttpProxyJob(transport *fasthttp.Client, q *fasthttp.Request, id string) *fastHttpProxyJob {
 	//initFastHttpProxyResChan(rcsize)
 	job := fastHttpProxyJobPool.Get().(*fastHttpProxyJob)
 	job.q = q
@@ -47,17 +50,18 @@ type fastHttpProxyJob struct {
 	m string
 	t *fasthttp.Client
 }
-func (job *fastHttpProxyJob) Id() string{
+
+func (job *fastHttpProxyJob) Id() string {
 	return job.m
 }
-func (job *fastHttpProxyJob) OnWorkerFull(dispatcher *NonBlockingDispatcher){
+func (job *fastHttpProxyJob) OnWorkerFull(dispatcher *NonBlockingDispatcher) {
 	log.Error("worker 繁忙")
-	job.r <- FastHttpProxyJobResponse{nil, errors.New("worker繁忙"),0}
+	job.r <- FastHttpProxyJobResponse{nil, errors.New("worker繁忙"), 0}
 }
-func(job *fastHttpProxyJob) Do() {
+func (job *fastHttpProxyJob) Do() {
 	//now := time.Now()
 	resp := fasthttp.AcquireResponse()
-	err := job.t.Do(job.q,resp)
+	err := job.t.Do(job.q, resp)
 	//1.加协程可快速释放worker,worker不论转发是否成功就回列
 	// 优点:处理速度快,保证worker快速回,保证可用worker数
 	// 缺点:假如后端高并发处理能力不足,则会造成雪崩效应，后端已经处理不过来了，这边还是持续由worker发送请求
@@ -75,8 +79,8 @@ func(job *fastHttpProxyJob) Do() {
 func (job *fastHttpProxyJob) GetResChan() chan FastHttpProxyJobResponse {
 	return job.r
 }
-func (job *fastHttpProxyJob) Release()  {
-	<- job.r
+func (job *fastHttpProxyJob) Release() {
+	<-job.r
 	//job.putResChan()
 	//httpProxyJobPool.Put(job)
 }

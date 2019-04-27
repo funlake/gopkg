@@ -1,15 +1,13 @@
 package jobworker
 
-
-type WorkerJob interface{
+type WorkerJob interface {
 	Do()
 	Id() string
 	//OnWorkerFull(dispatcher Dispatcher)
 }
-type WorkerNonBlockingJob interface{
+type WorkerNonBlockingJob interface {
 	OnWorkerFull(dispatcher *NonBlockingDispatcher)
 }
-type WorkerBlockingJob interface{
+type WorkerBlockingJob interface {
 	OnWorkerFull(dispatcher *BlockingDispatcher)
 }
-

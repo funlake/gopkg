@@ -4,9 +4,9 @@ import (
 	"testing"
 	//. "github.com/smartystreets/goconvey/convey"
 	//"net/http"
-	"time"
-	"math/rand"
 	"github.com/funlake/gopkg/utils/log"
+	"math/rand"
+	"time"
 )
 
 //func TestBreaker_Run(t *testing.T) {
@@ -37,11 +37,11 @@ func BenchmarkBreaker_Run(b *testing.B) {
 	bre.SetMin(3)
 	b.N = 1000
 	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next(){
+		for pb.Next() {
 			bre.Run(func() {
-				 //http.Get("http://www.google.com")
-				 //time.Sleep(3 * time.Second)
-				 //log.Info("what the hell?")
+				//http.Get("http://www.google.com")
+				//time.Sleep(3 * time.Second)
+				//log.Info("what the hell?")
 				//log.Success("%d",res.StatusCode)
 				//now := time.Now()
 				rand.Seed(time.Now().UnixNano())

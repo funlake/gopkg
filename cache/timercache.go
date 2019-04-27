@@ -1,5 +1,6 @@
 package cache
-type TimerCache interface{
+
+type TimerCache interface {
 	Flush()
-	Get(hk string,k string,wheel int) (string,error)
+	Get(hk string, k string, wheel int) (string, error)
 }

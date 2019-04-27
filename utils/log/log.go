@@ -1,10 +1,12 @@
 package log
+
 import (
 	"fmt"
-	"time"
-	"runtime"
 	"path/filepath"
+	"runtime"
+	"time"
 )
+
 //var (
 //	logger, _ = zap.NewProduction()
 //	suger     = logger.Sugar()
@@ -22,6 +24,7 @@ const (
 	warn = "[W]"
 	succ = "[S]"
 )
+
 // see complete color rules in document in https://en.wikipedia.org/wiki/ANSI_escape_code#cite_note-ecma48-13
 func Trace(format string, a ...interface{}) {
 	prefix := yellow(trac)
@@ -80,6 +83,6 @@ func magenta(s string) string {
 func formatLog(prefix string) string {
 	_, fn, line, _ := runtime.Caller(2)
 	file := filepath.Base(fn)
-	fd := fmt.Sprintf("[%s:%d]",file,line)
+	fd := fmt.Sprintf("[%s:%d]", file, line)
 	return time.Now().Format("2006/01/02 15:04:05") + " " + prefix + " " + fd
 }
