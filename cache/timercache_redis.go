@@ -13,21 +13,26 @@ import (
 type TimerCacheRedis struct {
 	mu         sync.Mutex
 	store      *KvStoreRedis
-	local      map[string]string
+	//local      map[string]string
 	ticker     *timer.Ticker
 	emptyCount map[string]int
+	mcache sync.Map
 }
 
 func NewTimerCacheRedis() *TimerCacheRedis {
-	return &TimerCacheRedis{local: make(map[string]string), ticker: timer.NewTicker(), emptyCount: make(map[string]int)}
+	return &TimerCacheRedis{/*local: make(map[string]string), */ticker: timer.NewTicker(), emptyCount: make(map[string]int)}
 }
 func (tc *TimerCacheRedis) Flush() {
 	tc.mu.Lock()
 	defer tc.mu.Unlock()
-	for k := range tc.local {
-		delete(tc.local, k)
-		//ticker.Stop(k)
-	}
+	//for k := range tc.local {
+	//	delete(tc.local, k)
+	//	//ticker.Stop(k)
+	//}
+	tc.mcache.Range(func(key, value interface{}) bool {
+		tc.mcache.Delete(key)
+		return true
+	})
 }
 func (tc *TimerCacheRedis) SetStore(store *KvStoreRedis) {
 	tc.store = store
@@ -39,15 +44,15 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 	tc.mu.Lock()
 	defer tc.mu.Unlock()
 	localCacheKey := hk + "_" + k
-	if _, ok := tc.local[localCacheKey]; ok {
-		return tc.local[localCacheKey], nil
+	mcacheVal,has := tc.mcache.Load(localCacheKey)
+	//if _, ok := tc.local[localCacheKey]; ok {
+	if has{
+		return mcacheVal.(string),nil
+		//return tc.local[localCacheKey], nil
 	} else {
 		//log.Info("Access redis for setting : %s_%s",hk,k)
 		v, err := tc.store.HashGet(hk, k)
-		if err == nil /*|| strings.Contains(err.Error(),"nil returned")*/ {
-			//tc.local[localCacheKey] = v.(string)
-			//log.Info("set cache value even cache is empty :%s",localCacheKey)
-			tc.local[localCacheKey] = v.(string)
+		if err == nil {
 			tc.ticker.Set(wheel, localCacheKey, func() {
 				tc.mu.Lock()
 				defer tc.mu.Unlock()
@@ -68,7 +73,8 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 							delete(tc.emptyCount, localCacheKey)
 						}
 						//赋空值,如要情况缓存，可调用/api-cleancache接口
-						tc.local[localCacheKey] = v.(string)
+						//tc.local[localCacheKey] = v.(string)
+						tc.mcache.Store(localCacheKey,v.(string))
 						//delete(tc.local,localCacheKey)
 					} else {
 						//发生redis连接故障，则继续保持旧有缓存
@@ -81,18 +87,22 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 						delete(tc.emptyCount, localCacheKey)
 					}
 					//log.Warning("更新数据%s : %s",localCacheKey,v.(string))
-					tc.local[localCacheKey] = v.(string)
+					//tc.local[localCacheKey] = v.(string)
+					tc.mcache.Store(localCacheKey,v.(string))
 				}
 			})
-			return tc.local[localCacheKey], nil
+			return v.(string),nil
+			//return tc.local[localCacheKey], nil
 		} else {
 			log.Warning("%s : %s", localCacheKey, err.Error())
 			//防止redis被刷
 			//如要情况缓存，可调用/api-cleancache接口
-			tc.local[localCacheKey] = ""
+			//tc.local[localCacheKey] = ""
+			tc.mcache.Store(localCacheKey,"")
 			//return "",err
 		}
 	}
+	return mcacheVal.(string),nil
 	//log.Warning("waht the fuck?")
-	return tc.local[localCacheKey], nil
+	//return tc.local[localCacheKey], nil
 }
