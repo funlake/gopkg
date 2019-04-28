@@ -11,7 +11,7 @@ import (
 )
 
 type TimerCacheRedis struct {
-	mu         sync.Mutex
+	//mu         sync.Mutex
 	store      *KvStoreRedis
 	//local      map[string]string
 	ticker     *timer.Ticker
@@ -23,8 +23,8 @@ func NewTimerCacheRedis() *TimerCacheRedis {
 	return &TimerCacheRedis{/*local: make(map[string]string), */ticker: timer.NewTicker(), emptyCount: make(map[string]int)}
 }
 func (tc *TimerCacheRedis) Flush() {
-	tc.mu.Lock()
-	defer tc.mu.Unlock()
+	//tc.mu.Lock()
+	//defer tc.mu.Unlock()
 	//for k := range tc.local {
 	//	delete(tc.local, k)
 	//	//ticker.Stop(k)
@@ -41,21 +41,20 @@ func (tc *TimerCacheRedis) GetStore() *KvStoreRedis {
 	return tc.store
 }
 func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
-	tc.mu.Lock()
-	defer tc.mu.Unlock()
+	//tc.mu.Lock()
+	//defer tc.mu.Unlock()
 	localCacheKey := hk + "_" + k
-	mcacheVal,has := tc.mcache.Load(localCacheKey)
+	log.Info(localCacheKey)
+	machsVal,has := tc.mcache.Load(localCacheKey)
 	//if _, ok := tc.local[localCacheKey]; ok {
 	if has{
-		return mcacheVal.(string),nil
+		return machsVal.(string),nil
 		//return tc.local[localCacheKey], nil
 	} else {
 		//log.Info("Access redis for setting : %s_%s",hk,k)
 		v, err := tc.store.HashGet(hk, k)
 		if err == nil {
 			tc.ticker.Set(wheel, localCacheKey, func() {
-				tc.mu.Lock()
-				defer tc.mu.Unlock()
 				//log.Info("每%d秒定时检查%s",wheel,localCacheKey)
 				v, err := tc.store.HashGet(hk, k)
 				//假如redis服务器挂了,得保留之前的本地缓存值
@@ -102,7 +101,7 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 			//return "",err
 		}
 	}
-	return mcacheVal.(string),nil
+	return machsVal.(string),nil
 	//log.Warning("waht the fuck?")
 	//return tc.local[localCacheKey], nil
 }
