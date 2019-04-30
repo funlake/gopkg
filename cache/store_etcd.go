@@ -41,9 +41,9 @@ func (es *KvStoreEtcd) ConnectWithTls(dsn, tlsc interface{}) error {
 }
 
 //todo : cancel context needed
-func (es *KvStoreEtcd) Get(key string) (interface{}, error) {
+func (es *KvStoreEtcd) Get(key string, opts ...cv3.OpOption) (interface{}, error) {
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
-	r, err := es.conn.Get(ctx, key)
+	r, err := es.conn.Get(ctx, key, opts...)
 	return r, err
 }
 func (es *KvStoreEtcd) Set(key string, val interface{}) (interface{}, error) {

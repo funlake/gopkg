@@ -12,15 +12,15 @@ import (
 
 type TimerCacheRedis struct {
 	//mu         sync.Mutex
-	store      *KvStoreRedis
+	store *KvStoreRedis
 	//local      map[string]string
 	ticker     *timer.Ticker
 	emptyCount map[string]int
-	mcache sync.Map
+	mcache     sync.Map
 }
 
 func NewTimerCacheRedis() *TimerCacheRedis {
-	return &TimerCacheRedis{/*local: make(map[string]string), */ticker: timer.NewTicker(), emptyCount: make(map[string]int)}
+	return &TimerCacheRedis{ /*local: make(map[string]string), */ ticker: timer.NewTicker(), emptyCount: make(map[string]int)}
 }
 func (tc *TimerCacheRedis) Flush() {
 	//tc.mu.Lock()
@@ -45,10 +45,10 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 	//defer tc.mu.Unlock()
 	localCacheKey := hk + "_" + k
 	log.Info(localCacheKey)
-	machsVal,has := tc.mcache.Load(localCacheKey)
+	machsVal, has := tc.mcache.Load(localCacheKey)
 	//if _, ok := tc.local[localCacheKey]; ok {
-	if has{
-		return machsVal.(string),nil
+	if has {
+		return machsVal.(string), nil
 		//return tc.local[localCacheKey], nil
 	} else {
 		//log.Info("Access redis for setting : %s_%s",hk,k)
@@ -73,7 +73,7 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 						}
 						//赋空值,如要情况缓存，可调用/api-cleancache接口
 						//tc.local[localCacheKey] = v.(string)
-						tc.mcache.Store(localCacheKey,v.(string))
+						tc.mcache.Store(localCacheKey, v.(string))
 						//delete(tc.local,localCacheKey)
 					} else {
 						//发生redis连接故障，则继续保持旧有缓存
@@ -87,21 +87,21 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 					}
 					//log.Warning("更新数据%s : %s",localCacheKey,v.(string))
 					//tc.local[localCacheKey] = v.(string)
-					tc.mcache.Store(localCacheKey,v.(string))
+					tc.mcache.Store(localCacheKey, v.(string))
 				}
 			})
-			return v.(string),nil
+			return v.(string), nil
 			//return tc.local[localCacheKey], nil
 		} else {
 			log.Warning("%s : %s", localCacheKey, err.Error())
 			//防止redis被刷
 			//如要情况缓存，可调用/api-cleancache接口
 			//tc.local[localCacheKey] = ""
-			tc.mcache.Store(localCacheKey,"")
+			tc.mcache.Store(localCacheKey, "")
 			//return "",err
 		}
 	}
-	return machsVal.(string),nil
+	return machsVal.(string), nil
 	//log.Warning("waht the fuck?")
 	//return tc.local[localCacheKey], nil
 }
