@@ -41,11 +41,10 @@ func (d *BlockingDispatcher) Put(job WorkerJob) bool {
 		return false
 	case d.jobQueue <- job:
 		return true
-	//default:
-	//	//d.failQueue <- job
-	//	return false
+	default:
+		//d.failQueue <- job
+		return false
 	}
-
 	return false
 }
 func (d *BlockingDispatcher) Run(maxWorker int) {
