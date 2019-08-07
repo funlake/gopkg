@@ -13,7 +13,7 @@ var transport = &http.Transport{
 	DisableKeepAlives:   false,
 	MaxIdleConnsPerHost: 10,
 }
-var fasthttpClient = &fasthttp.Client{}
+var fasthttpClient = &fasthttp.HostClient{}
 
 func TestDispatcher_Put(t *testing.T) {
 	dispatcher := NewBlockingDispather(2, 10)

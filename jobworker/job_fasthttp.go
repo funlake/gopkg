@@ -32,7 +32,7 @@ var fastHttpProxyJobPool = sync.Pool{
 //		}
 //	})
 //}
-func NewFastHttpProxyJob(transport *fasthttp.Client, q *fasthttp.Request, id string) *fastHttpProxyJob {
+func NewFastHttpProxyJob(transport *fasthttp.HostClient, q *fasthttp.Request, id string) *fastHttpProxyJob {
 	//initFastHttpProxyResChan(rcsize)
 	job := fastHttpProxyJobPool.Get().(*fastHttpProxyJob)
 	job.q = q
@@ -48,7 +48,7 @@ type fastHttpProxyJob struct {
 	q *fasthttp.Request
 	r chan FastHttpProxyJobResponse
 	m string
-	t *fasthttp.Client
+	t *fasthttp.HostClient
 }
 
 func (job *fastHttpProxyJob) Id() string {
