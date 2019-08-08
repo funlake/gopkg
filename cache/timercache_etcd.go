@@ -53,9 +53,11 @@ func (tc *TimerCacheEtcd) Get(hk string, k string, wheel int) (string, error) {
 	rv = val.(string)
 	return rv, nil
 }
-func (tc *TimerCacheEtcd) Flush() {
+func (tc *TimerCacheEtcd) Flush(k string) {
 	tc.local.Range(func(key, value interface{}) bool {
-		tc.local.Delete(key)
+		if k == key {
+			tc.local.Delete(key)
+		}
 		return true
 	})
 }

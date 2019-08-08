@@ -22,7 +22,7 @@ type TimerCacheRedis struct {
 func NewTimerCacheRedis() *TimerCacheRedis {
 	return &TimerCacheRedis{ /*local: make(map[string]string), */ ticker: timer.NewTicker(), emptyCount: make(map[string]int)}
 }
-func (tc *TimerCacheRedis) Flush() {
+func (tc *TimerCacheRedis) Flush(k string) {
 	//tc.mu.Lock()
 	//defer tc.mu.Unlock()
 	//for k := range tc.local {
@@ -30,7 +30,9 @@ func (tc *TimerCacheRedis) Flush() {
 	//	//ticker.Stop(k)
 	//}
 	tc.mcache.Range(func(key, value interface{}) bool {
-		tc.mcache.Delete(key)
+		if k == key {
+			tc.mcache.Delete(key)
+		}
 		return true
 	})
 }
