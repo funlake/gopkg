@@ -1,10 +1,10 @@
 package limiter
 
 import (
-	"testing"
-	"golang.org/x/time/rate"
-	"time"
 	"context"
+	"golang.org/x/time/rate"
+	"testing"
+	"time"
 )
 
 func Benchmark_GetTimeTokenBucket100(b *testing.B) {
@@ -17,11 +17,12 @@ func Benchmark_GetTimeTokenBucket100(b *testing.B) {
 	tokenBucketSchedular := NewTokenBucketSchedular()
 	b.SetParallelism(20)
 	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next(){
-			tokenBucketSchedular.GetTimeTokenBucket("test_second", 300, 300, 1,nil).GetToken()
+		for pb.Next() {
+			tokenBucketSchedular.GetTimeTokenBucket("test_second", 300, 300, 1, nil).GetToken()
 		}
 	})
 }
+
 //check raw rate controller implemented by go itself
 //a little bit slower then mine,:p
 //but raw one got Wait method to block request let it might could be executed later
@@ -29,8 +30,8 @@ func Benchmark_GetTimeTokenBucket100(b *testing.B) {
 func BenchmarkRawRateLimit(b *testing.B) {
 	b.SetParallelism(20)
 	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next(){
-			limiter := rate.NewLimiter(rate.Every(time.Second * 1),300)
+		for pb.Next() {
+			limiter := rate.NewLimiter(rate.Every(time.Second*1), 300)
 			limiter.Wait(context.Background())
 		}
 	})
@@ -90,8 +91,7 @@ func BenchmarkRawRateLimit(b *testing.B) {
 
 func TestTokenBucket_GetToken(t *testing.T) {
 	tokenBucketSchedular := NewTokenBucketSchedular()
-	for i:=0;i<1000;i++{
-		tokenBucketSchedular.GetTimeTokenBucket("test_second", 100, 1001, 1,nil).GetToken()
+	for i := 0; i < 1000; i++ {
+		tokenBucketSchedular.GetTimeTokenBucket("test_second", 100, 1001, 1, nil).GetToken()
 	}
 }
-

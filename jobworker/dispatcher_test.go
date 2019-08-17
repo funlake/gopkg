@@ -147,7 +147,7 @@ func makeRequestWithFastHttp(dispatcher *NonBlockingDispatcher) error {
 	}
 	return nil
 }
-func makeSimpleBlockingJob(dispatcher *BlockingDispatcher) error{
+func makeSimpleBlockingJob(dispatcher *BlockingDispatcher) error {
 	job := NewSimpleJob(func() {
 		fmt.Printf("great world!")
 		time.Sleep(time.Second * 2)
@@ -189,6 +189,7 @@ func makeRequestWithBlockingFastHttp(dispatcher *BlockingDispatcher) error {
 	}
 	return nil
 }
+
 //func TestNewFastHttpProxyJob(t *testing.T) {
 //	dispatcher := NewNonBlockingDispather(2, 500)
 //	for i := 0; i < 50; i++ {
@@ -207,6 +208,7 @@ func TestBlockingNewHttpProxyJob(t *testing.T) {
 	}
 	time.Sleep(time.Second * 100)
 }
+
 //func BenchmarkDispatcher_WithTransport(b *testing.B) {
 //	dispatcher := NewBlockingDispather(1, 1)
 //	//b.SetParallelism(10)
