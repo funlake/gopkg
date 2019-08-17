@@ -65,6 +65,11 @@ func (tc *TimerCacheEtcd) Flush(k string) {
 	})
 }
 
+func (tc *TimerCacheEtcd) Delete(key string) {
+	_, _ = tc.store.Delete(key)
+	tc.Flush(key)
+}
+
 func (tc *TimerCacheEtcd) Watch(key string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	wc := tc.store.Watch(ctx, key)

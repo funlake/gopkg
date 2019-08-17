@@ -5,4 +5,5 @@ type TimerCache interface {
 	Get(hk string, k string, wheel int) (string, error)
 	SetStore(store KvStore)
 	GetStore() KvStore
+	Delete(key string)
 }

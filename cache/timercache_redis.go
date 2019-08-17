@@ -23,18 +23,16 @@ func NewTimerCacheRedis() *TimerCacheRedis {
 	return &TimerCacheRedis{ /*local: make(map[string]string), */ ticker: timer.NewTicker(), emptyCount: make(map[string]int)}
 }
 func (tc *TimerCacheRedis) Flush(k string) {
-	//tc.mu.Lock()
-	//defer tc.mu.Unlock()
-	//for k := range tc.local {
-	//	delete(tc.local, k)
-	//	//ticker.Stop(k)
-	//}
 	tc.mcache.Range(func(key, value interface{}) bool {
 		if k == key {
 			tc.mcache.Delete(key)
 		}
 		return true
 	})
+}
+func (tc *TimerCacheRedis) Delete(key string){
+	_, _ = tc.store.Delete(key)
+	tc.Flush(key)
 }
 func (tc *TimerCacheRedis) SetStore(store KvStore) {
 	tc.store = store.(*KvStoreRedis)

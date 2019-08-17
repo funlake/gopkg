@@ -9,6 +9,9 @@ type TimerCacheMemory struct {
 func (tcm *TimerCacheMemory) Flush(key string){
 	_, _ = tcm.store.Delete(key)
 }
+func (tcm *TimerCacheMemory) Delete(key string){
+	tcm.Flush(key)
+}
 func (tcm *TimerCacheMemory) Get(hk string, k string, wheel int) (string, error){
 	if v,ok := tcm.store.localStorage.Load(hk+k);ok{
 		return v.(string),nil
