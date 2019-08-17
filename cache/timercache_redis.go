@@ -36,10 +36,10 @@ func (tc *TimerCacheRedis) Flush(k string) {
 		return true
 	})
 }
-func (tc *TimerCacheRedis) SetStore(store *KvStoreRedis) {
-	tc.store = store
+func (tc *TimerCacheRedis) SetStore(store KvStore) {
+	tc.store = store.(*KvStoreRedis)
 }
-func (tc *TimerCacheRedis) GetStore() *KvStoreRedis {
+func (tc *TimerCacheRedis) GetStore() KvStore {
 	return tc.store
 }
 func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
@@ -104,6 +104,4 @@ func (tc *TimerCacheRedis) Get(hk string, k string, wheel int) (string, error) {
 		}
 	}
 	return machsVal.(string), nil
-	//log.Warning("waht the fuck?")
-	//return tc.local[localCacheKey], nil
 }

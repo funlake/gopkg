@@ -48,12 +48,12 @@ func (sr *KvStoreRedis) Connect(dsn string, pwd string) {
 func (sr *KvStoreRedis) ConnectWithTls(dsn, tls interface{}) error {
 	return nil
 }
-func (sr *KvStoreRedis) Set(key string, val interface{}) {
+func (sr *KvStoreRedis) Set(key string, val interface{}) (interface{},error){
 	c := sr.pool.Get()
 	defer c.Close()
-	c.Do("SET", key, val)
+	return c.Do("SET", key, val)
 }
-func (sr *KvStoreRedis) Get(key string) (interface{}, error) {
+func (sr *KvStoreRedis) Get(key string,opts ... interface{}) (interface{}, error) {
 	c := sr.pool.Get()
 	defer c.Close()
 	return redis.String(c.Do("GET", key))

@@ -40,31 +40,21 @@ func (es *KvStoreEtcd) ConnectWithTls(dsn, tlsc interface{}) error {
 	return err
 }
 
-//todo : cancel context needed
-func (es *KvStoreEtcd) Get(key string, opts ...cv3.OpOption) (interface{}, error) {
+//todo : cancel context needed,cv3.OpOption
+func (es *KvStoreEtcd) Get(key string, opts ...interface{}) (interface{}, error) {
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
-	r, err := es.conn.Get(ctx, key, opts...)
-	return r, err
+	var opOptions []cv3.OpOption
+	j:=len(opts)
+	for i:=0;i<j;i++{
+		opOptions = append(opOptions, opts[i].(cv3.OpOption))
+	}
+	return es.conn.Get(ctx, key, opOptions...)
 }
 func (es *KvStoreEtcd) Set(key string, val interface{}) (interface{}, error) {
-	//_,err := con.NewSTM(es.conn, func(stm con.STM) error {
-	//  stm.Put(key,val.(string))
-	//  return nil
-	//})
-	//if err != nil{
-	//  log.Error(err.Error())
-	//}
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
 	return es.conn.Put(ctx, key, val.(string))
 }
 func (es *KvStoreEtcd) HashSet(hk, key string, val interface{}) (interface{}, error) {
-	//_,err := con.NewSTM(es.conn, func(stm con.STM) error {
-	//  stm.Put(hk+"/"+key,val.(string))
-	//  return nil
-	//})
-	//if err != nil{
-	//  log.Error(err.Error())
-	//}
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
 	return es.conn.Put(ctx, hk+"/"+key, val.(string))
 }

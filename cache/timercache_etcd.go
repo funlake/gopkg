@@ -18,8 +18,11 @@ type TimerCacheEtcd struct {
 	local sync.Map
 }
 
-func (tc *TimerCacheEtcd) GetStore() *KvStoreEtcd {
+func (tc *TimerCacheEtcd) GetStore() KvStore {
 	return tc.store
+}
+func (tc *TimerCacheEtcd) SetStore(store KvStore) {
+	tc.store = store.(*KvStoreEtcd)
 }
 func (tc *TimerCacheEtcd) Get(hk string, k string, wheel int) (string, error) {
 	var rv string
@@ -47,7 +50,7 @@ func (tc *TimerCacheEtcd) Get(hk string, k string, wheel int) (string, error) {
 			return rv, nil
 		} else {
 			tc.local.Store(rk, "")
-			return "", errors.New("Value Not set")
+			return "", errors.New("Value Not Set")
 		}
 	}
 	rv = val.(string)
@@ -61,9 +64,7 @@ func (tc *TimerCacheEtcd) Flush(k string) {
 		return true
 	})
 }
-func (tc *TimerCacheEtcd) SetStore(store *KvStoreEtcd) {
-	tc.store = store
-}
+
 func (tc *TimerCacheEtcd) Watch(key string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	wc := tc.store.Watch(ctx, key)
