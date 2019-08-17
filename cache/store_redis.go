@@ -53,6 +53,11 @@ func (sr *KvStoreRedis) Set(key string, val interface{}) (interface{},error){
 	defer c.Close()
 	return c.Do("SET", key, val)
 }
+func (sr *KvStoreRedis) Delete(key string) (interface{},error) {
+	c := sr.pool.Get()
+	defer c.Close()
+	return c.Do("Del",key)
+}
 func (sr *KvStoreRedis) Get(key string,opts ... interface{}) (interface{}, error) {
 	c := sr.pool.Get()
 	defer c.Close()

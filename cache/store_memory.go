@@ -18,3 +18,7 @@ func (ksm *KvStoreMemory) Set(key string, val interface{}) (interface{},error) {
 	ksm.localStorage.Store(key,val)
 	return "" , nil
 }
+func (ksm *KvStoreMemory) Delete(key string) (interface{},error) {
+	ksm.localStorage.Delete(key)
+	return "",nil
+}
