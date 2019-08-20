@@ -116,32 +116,32 @@ type tokenBucket struct {
 	dayFun *DayRateFun
 }
 
-func (this *tokenBucket) setDayRateFun(fs *DayRateFun) {
+func (tbk *tokenBucket) setDayRateFun(fs *DayRateFun) {
 	log.Warning("Set day rate limit fun")
-	this.dayFun = fs
+	tbk.dayFun = fs
 }
 
 //每隔一段时间执行令牌放入令牌桶动作
-func (this *tokenBucket) startTimer() {
+func (tbk *tokenBucket) startTimer() {
 	//往全局定时器插入当前事件
-	this.ticker.Set(int(this.second), this.bucketKey, func() {
-		this.putTokenIntoBucket(TB_PUTRATE)
+	tbk.ticker.Set(int(tbk.second), tbk.bucketKey, func() {
+		tbk.putTokenIntoBucket(TB_PUTRATE)
 	})
-	//log.Success("限流令牌桶%s,%dreq/%ds,rate:%d桶定时器启动:",this.bucketKey,this.size,int(this.second),this.rate)
+	//log.Success("限流令牌桶%s,%dreq/%ds,rate:%d桶定时器启动:",tbk.bucketKey,tbk.size,int(tbk.second),tbk.rate)
 }
 
 //重启定时动作
-func (this *tokenBucket) restartTimer() {
-	//this.Ticker.Stop()
+func (tbk *tokenBucket) restartTimer() {
+	//tbk.Ticker.Stop()
 	log.Warning("Restarting loop second")
-	if this.dayTicker {
-		//this.dayTicker.Stop()
-		this.ticker.Stop(600, this.bucketKey+"_600")
+	if tbk.dayTicker {
+		//tbk.dayTicker.Stop()
+		tbk.ticker.Stop(600, tbk.bucketKey+"_600")
 	}
-	this.clearTokenInBucket()
-	this.putTokenIntoBucket(TB_PUTRATE)
-	//this.Ticker = time.NewTicker(time.second * this.second)
-	this.startTimer()
+	tbk.clearTokenInBucket()
+	tbk.putTokenIntoBucket(TB_PUTRATE)
+	//tbk.Ticker = time.NewTicker(time.second * tbk.second)
+	tbk.startTimer()
 }
 
 //实现的并不优雅，此方法只针对基于每天限流的令牌桶规则
@@ -149,16 +149,16 @@ func (this *tokenBucket) restartTimer() {
 //时分秒等限流，可以做到每隔一段时间置入令牌,固目前有以下做法
 //做法: 一旦网关启动后， 第一次检测到凌晨0点，就刷新令牌桶的定时任务，这样定时任务
 //开始时间就会从下一个0点开始，这样就大致能做到每隔24小时刷新令牌桶
-func (this *tokenBucket) dayLimitRefreshCheck() {
+func (tbk *tokenBucket) dayLimitRefreshCheck() {
 	//每10分钟执行一次，发现是凌晨0点则重启LoopSecond,清空令牌桶
-	this.ticker.Set(600, this.bucketKey+"_600", func() {
+	tbk.ticker.Set(600, tbk.bucketKey+"_600", func() {
 		log.Info("day loop checking")
 		now := time.Now()
 		if now.Hour() == 0 {
 			log.Warning("Restart loop for day limit")
 			//重新启动
-			this.restartTimer()
-			this.ticker.Stop(600, this.bucketKey+"_600")
+			tbk.restartTimer()
+			tbk.ticker.Stop(600, tbk.bucketKey+"_600")
 		}
 	})
 }
@@ -167,18 +167,18 @@ func (this *tokenBucket) dayLimitRefreshCheck() {
 //考虑分布式场景，考虑服务重启场景
 //考虑用消息队列,可发一条指令到消息队列
 //然后在回调处做植入channel的操作
-func (this *tokenBucket) putTokenIntoBucket(putType int) {
+func (tbk *tokenBucket) putTokenIntoBucket(putType int) {
 	//defer utils.RoutineRecover()
-	if this.bucketIsFull {
+	if tbk.bucketIsFull {
 		return
 	}
-	rate := this.rate
+	rate := tbk.rate
 	switch putType {
 	case TB_PUTLEFT:
 		//cache := lib.NewCache()
-		//r,err := cache.GetRateLimitLeft(this.bucketKey)
-		if this.dayFun != nil {
-			r, err := this.dayFun.Get(this.bucketKey)
+		//r,err := cache.GetRateLimitLeft(tbk.bucketKey)
+		if tbk.dayFun != nil {
+			r, err := tbk.dayFun.Get(tbk.bucketKey)
 			if err == nil {
 				rate, _ = strconv.Atoi(r)
 				log.Info("Set day rate from last stop:" + r)
@@ -186,17 +186,17 @@ func (this *tokenBucket) putTokenIntoBucket(putType int) {
 		}
 	case TB_PUTRATE:
 	default:
-		//rate = this.rate
+		//rate = tbk.rate
 	}
 	for v := rate; v > 0; v-- {
 		select {
-		case this.bucket <- 1:
+		case tbk.bucket <- 1:
 			//log.Warning("Successfully put one token into bucket")
 			continue
 			//case <-time.After(time.Microsecond * 1):
 		default:
 			//log.Warning("second bucket is full of tokens")
-			this.bucketIsFull = true
+			tbk.bucketIsFull = true
 			break
 		}
 	}
@@ -205,29 +205,29 @@ func (this *tokenBucket) putTokenIntoBucket(putType int) {
 //清空令牌桶
 //TODO:
 //考虑分布式场景，考虑服务重启场景
-func (this *tokenBucket) clearTokenInBucket() {
+func (tbk *tokenBucket) clearTokenInBucket() {
 theEnd:
 	for {
 		select {
 		//case <-time.After(time.Microsecond * 1):
 		default:
-			this.bucketIsFull = false
+			tbk.bucketIsFull = false
 			log.Warning("bucket was flushed")
 			break theEnd
 			//return
-		case <-this.bucket:
+		case <-tbk.bucket:
 			//log.Warning("Get token")
 			continue
 		}
 	}
 }
-func (this *tokenBucket) stopTokenBucketTimer() {
-	if this.dayTicker {
-		this.ticker.Stop(600, this.bucketKey+"_600")
+func (tbk *tokenBucket) stopTokenBucketTimer() {
+	if tbk.dayTicker {
+		tbk.ticker.Stop(600, tbk.bucketKey+"_600")
 	}
 	//停掉定时器,否则定时器还在，channel却已关闭
-	this.ticker.Stop(int(this.second), this.bucketKey)
-	close(this.bucket)
+	tbk.ticker.Stop(int(tbk.second), tbk.bucketKey)
+	close(tbk.bucket)
 }
 
 //消费令牌
@@ -235,10 +235,10 @@ func (this *tokenBucket) stopTokenBucketTimer() {
 //考虑分布式场景，考虑服务重启场景
 //考虑用消息队列,可发一条指令到消息队列
 //然后在回调处做消费channel的操作
-func (this *tokenBucket) GetToken() bool {
+func (tbk *tokenBucket) GetToken() bool {
 	select {
-	case <-this.bucket:
-		this.bucketIsFull = false
+	case <-tbk.bucket:
+		tbk.bucketIsFull = false
 		return true
 	default:
 	}
@@ -246,14 +246,14 @@ func (this *tokenBucket) GetToken() bool {
 }
 
 //捕获退出，保存进程信息
-func (this *tokenBucket) catchExit() {
+func (tbk *tokenBucket) catchExit() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT)
 	select {
 	case <-c:
-		log.Warning(this.bucketKey + " caught stop signal")
-		if this.dayFun != nil {
-			this.dayFun.Set(this.bucketKey, strconv.Itoa(len(this.bucket)))
+		log.Warning(tbk.bucketKey + " caught stop signal")
+		if tbk.dayFun != nil {
+			tbk.dayFun.Set(tbk.bucketKey, strconv.Itoa(len(tbk.bucket)))
 		}
 		signal.Stop(c)
 		close(c)
