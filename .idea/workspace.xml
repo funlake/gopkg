@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a24b724-9f0a-477d-8066-157b4d40abf4" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cache/timercache.go" beforeDir="false" afterPath="$PROJECT_DIR$/cache/timercache.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cache/timercache_etcd.go" beforeDir="false" afterPath="$PROJECT_DIR$/cache/timercache_etcd.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cache/timercache_memory.go" beforeDir="false" afterPath="$PROJECT_DIR$/cache/timercache_memory.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cache/timercache_redis.go" beforeDir="false" afterPath="$PROJECT_DIR$/cache/timercache_redis.go" afterDir="false" />
-    </list>
+    <list default="true" id="2a24b724-9f0a-477d-8066-157b4d40abf4" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,7 +97,7 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/cache/timercache_etcd.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="368">
+            <state relative-caret-position="458">
               <caret line="69" column="17" selection-start-line="69" selection-start-column="17" selection-end-line="69" selection-end-column="17" />
               <folding>
                 <element signature="e#15#134#0" expanded="true" />
@@ -453,7 +447,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/cache/timercache_etcd.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="368">
+        <state relative-caret-position="458">
           <caret line="69" column="17" selection-start-line="69" selection-start-column="17" selection-end-line="69" selection-end-column="17" />
           <folding>
             <element signature="e#15#134#0" expanded="true" />
