@@ -63,7 +63,7 @@ func (job *httpProxyJob) Do() {
 	//now := time.Now()
 	//log.Info("%s,%s",job.t.RoundTrip,job.q.Method)
 
-	res, _ := job.t.RoundTrip(job.q)
+	res, err := job.t.RoundTrip(job.q)
 	//1.加协程可快速释放worker,worker不论转发是否成功就回列
 	// 优点:处理速度快,保证worker快速回,保证可用worker数
 	// 缺点:假如后端高并发处理能力不足,则会造成雪崩效应，后端已经处理不过来了，这边还是持续由worker发送请求
@@ -73,7 +73,7 @@ func (job *httpProxyJob) Do() {
 	//目前选择:2,处理能力可通过调整worker size大小来决定
 	//TODO : 更多测试
 	//go func(res *http.Response,err error) {
-	job.r <- HttpProxyJobResponse{res, nil, 0}
+	job.r <- HttpProxyJobResponse{res, err, 0}
 	//log.Info("%s -> transport请求时间消耗 : %s",job.Id(),time.Since(now))
 	//}()
 }
