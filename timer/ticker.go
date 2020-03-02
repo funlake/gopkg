@@ -12,25 +12,25 @@ func NewTicker() *Ticker {
 	once.Do(func() {
 		cron = NewTimer()
 		cron.Ready()
-		ticker = &Ticker{slotItems: make(map[string]*SlotItem)}
+		ticker = &Ticker{}
 	})
 	return ticker
 }
 
 type Ticker struct {
-	slotItems map[string]*SlotItem
+	slotItems sync.Map
 }
 
-func (this *Ticker) Set(second int, key string, fun func()) {
+func (t *Ticker) Set(second int, key string, fun func()) {
 	slotkey := string(second) + "_" + key
-	if _, ok := this.slotItems[slotkey]; !ok {
-		this.slotItems[slotkey] = cron.SetInterval(second, fun)
+	if _, ok := t.slotItems.Load(slotkey); !ok {
+		t.slotItems.Store(slotkey,cron.SetInterval(second, fun))
 	}
 }
-func (this *Ticker) Stop(second int, key string) {
+func (t *Ticker) Stop(second int, key string) {
 	slotkey := string(second) + "_" + key
-	if _, ok := this.slotItems[slotkey]; ok {
-		cron.StopInterval(this.slotItems[slotkey])
-		delete(this.slotItems, slotkey)
+	if tk, ok := t.slotItems.Load(slotkey); ok {
+		cron.StopInterval(tk.(*SlotItem))
+		t.slotItems.Delete(slotkey)
 	}
 }
